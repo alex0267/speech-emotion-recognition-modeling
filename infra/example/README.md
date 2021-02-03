@@ -1,0 +1,4 @@
+
+export PROJECT_ID=wewyse-centralesupelec-ftv
+export EXPERIMENT_NAME=speech-emotion-recognition-modelling
+export GOOGLE_APPLICATION_CREDENTIALS=secrets/credentials-mlflow.json

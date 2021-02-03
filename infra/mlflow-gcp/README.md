@@ -1,83 +1,74 @@
-# mlflow-gcp 
+## MLFLOW on an instance using sqlite as a database 
 
-(Inspired by https://github.com/KielRodriguez/mlflow-aws)
+## Reference : 
+https://towardsdatascience.com/managing-your-machine-learning-experiments-with-mlflow-1cd6ee21996e
+##Steps 
 
-**Create a service account**
-
-Create a service account and grant write access to Storage buckets. 
-Download the API key (JSON) 
-
-
-**Run using Docker**
-
-```bash
-export GCLOUD_SERVICE_KEY_ENC=$(cat <PATH_TO_SECRET_JSON> | base64)
-export GCP_STORAGE_BUCKET=<GS_BUCKET_NAME> # exclude gs:// prefix
-
-docker pull arunma/mlflow-gcp
-docker run --name mlflow -P \
--e GCLOUD_SERVICE_KEY_ENC=$GCLOUD_SERVICE_KEY_ENC \
--e GCP_STORAGE_BUCKET=$GCP_STORAGE_BUCKET \
--p 5000:5000 \
-arunma/mlflow-gcp:latest
-
+####Activate your service account 
+```
+gcloud auth activate-service-account mlflow@wewyse-centralesupelec-ftv.iam.gserviceaccount.com --key-file=/Users/ncouturier/.config/gcloud/credentials-mlflow.json
 ```
 
-*Optional*
-
-```bash 
-export EXPERIMENT_NAME=<NAME_OF_THE_EXPERIMENT>
-
-docker run --name mlflow -it -P \
--e GCLOUD_SERVICE_KEY_ENC=$GCLOUD_SERVICE_KEY_ENC \
--e GCP_STORAGE_BUCKET=$GCP_STORAGE_BUCKET \
--e EXPERIMENT_NAME=$EXPERIMENT_NAME \
--p 5000:5000 \
-arunma/mlflow-gcp:latest
+####Create a compute Engine VM instance
 
 ```
-
-**Run using kubectl**
-
-Provision kubernetes cluster
-
-```shell
-# create cluster
-gcloud container clusters create my-cluster --region asia-southeast1
-
-# run this if you need to configure your shell to talk to this cluster (e.g. if you restarted your computer)
-gcloud container clusters get-credentials my-cluster 
+gcloud compute instances create mlflow-server \
+--machine-type n1-standard-1 \
+--zone europe-west1-b \
+--tags mlflow-server \
+--metadata startup-script='#! /bin/bash
+sudo apt update
+sudo apt-get -y install tmux
+echo Installing python3-pip
+sudo apt install -y python3-pip
+export PATH="$HOME/.local/bin:$PATH"
+echo Installing mlflow and google_cloud_storage
+pip3 install mlflow google-cloud-storage'
 ```
 
-```bash
-export GCLOUD_SERVICE_KEY_ENC=$(cat <PATH_TO_SECRET_JSON> | base64)
-export GCP_STORAGE_BUCKET=<GS_BUCKET_NAME> # exclude gs:// prefix
-
-Optional : export EXPERIMENT_NAME=<NAME_OF_THE_EXPERIMENT>
-
+####Firewall rules
+```
+gcloud compute firewall-rules create mlflow-server \
+--direction=INGRESS --priority=999 --network=default \
+--action=ALLOW --rules=tcp:5000 --source-ranges=0.0.0.0/0 \
+--target-tags=mlflow-server
 ```
 
-**Create secret in Kubernetes from local environment variable**
+####bucket for artifacts
+```
+gsutil mb -l EUROPE-WEST1 gs://wewyse-centralesupelec-ftv-mlflow 
+```
 
-This script just replaces the `GCLOUD_SERVICE_KEY_ENC` and `GCP_STORAGE_BUCKET` variables in `mlflow-gcp-secret.yaml.template` file with the values from the local environment variable. 
+####internal ip /  external ip
+10.132.0.56 / 34.76.125.135
 
-Also creates the `Secret` in Kubernetes
+####intermediate commands 
 
 ```
-source ./populate_secret.sh
+mlflow server \
+--backend-store-uri sqlite:///mlflow.db \
+--default-artifact-root gs://wewyse-centralesupelec-ftv-mlflow \
+--host 10.132.0.56
+```
+
+```
+mlflow server \
+--backend-store-uri sqlite:///mlflow.db \
+--default-artifact-root gs://wewyse-centralesupelec-ftv-mlflow \
+--host localhost
 ```
 
 
-**Create Deployment and service**
+####add enough rights in this case for this project
+ ###### Rights can be set per project
+ ```
+ gcloud projects add-iam-policy-binding wewyse-centralesupelec-ftv --role roles/editor  --member serviceAccount:mlflow@wewyse-centralesupelec-ftv.iam.gserviceaccount.com
+ ```
+ ###### Rights can be set in general 
 ```
-kubectl create -f mlflow-gcp-deployment.yaml
-
-kubectl create -f mlflow-gcp-service.yaml
+gcloud iam service-accounts add-iam-policy-binding mlflow@wewyse-centralesupelec-ftv.iam.gs
+erviceaccount.com --member='allAuthenticatedUsers'  --role='roles/owner'   
 ```
-
-To get the public IP of your kubernetes cluster, run `kubectl get service` after 2 minutes or so
-
-
-
-
+Beware, some rights can't be set in general, some rights can't be set per project
+  
 
