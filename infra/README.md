@@ -1,8 +1,8 @@
 ## Setup mlflow 
 
 
-###/mlflow-gcp : 
+### /mlflow-gcp : 
 instructions to build a simple infra 
 
-###/example :
+### /example :
 Python code showing how to log data
