@@ -29,7 +29,7 @@ Thus, the overall workflow is the following :
 
 - add a data file to dvc with the command 
 
-```dvc add myfile.csv``` 
+  ```dvc add myfile.csv``` 
 
 - ignore the data file in git and add a reference to the data file named myfile.csv.dvc 
   
