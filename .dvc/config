@@ -1,0 +1,4 @@
+[core]
+    remote = ftv-data
+['remote "ftv-data"']
+    url = gs://wewyse-centralesupelec-ftv-data/raw_data
