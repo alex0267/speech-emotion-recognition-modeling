@@ -16,7 +16,7 @@ A tool to create models to detect emotions in audio contents.
       then launch this command
       `dvc remote add -d ftv-data gs://wewyse-centralesupelec-ftv-data/raw_data`
       import-url will download data from a distant storage and create dvc file and .gitignore file
+       “dvc update ./raw_data.dvc” will bring data 
       reference :
          https://dvc.org/doc/use-cases/sharing-data-and-model-files
    faire une chaine à partir des exemples
-      
