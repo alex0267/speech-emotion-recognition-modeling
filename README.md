@@ -22,7 +22,11 @@ A tool to create models to detect emotions in audio contents.
          https://dvc.org/doc/use-cases/sharing-data-and-model-files
          
 - build a mvp for the projet
-   -  reformat data pre treatment
-   -  add them in a data loader
-   -  add the correct model
-   -  test a minimal config
+  -  reformat data pre treatment
+    - add pitch modulation
+        https://wiki.audacityteam.org/wiki/SoundTouch
+        http://www.surina.net/soundtouch/
+    - add creation of overlapping windows 
+  -  add them in a data loader
+    -  add the correct model
+    -  test a minimal config

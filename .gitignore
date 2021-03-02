@@ -284,3 +284,4 @@ ipython_config.py
 
 saved/
 data/MNIST/
+**/*/.DS_STORE
