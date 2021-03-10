@@ -38,10 +38,10 @@ class DnnModel(BaseModel):
 
         self.conv4 = nn.Conv2d(in_channels=64, out_channels=64, kernel_size=(3, 3), stride=(1, 1))
         self.conv4_drop = nn.Dropout2d(p=dropout)
-        self.fc1 = nn.Linear(64, num_classes)
+        self.fc1 = nn.Linear(64*4, num_classes)
 
     def forward(self, x):
-        x = F.tanh(F.max_pool2d(self.conv1(x), (2, 1)))
+        x = F.elu(F.max_pool2d(self.conv1(x), (2, 1)))
         x = self.conv1_drop(x)
         x = F.elu(F.max_pool2d(self.conv2(x), (2, 2)))
         x = self.conv2_drop(x)
@@ -49,5 +49,6 @@ class DnnModel(BaseModel):
         x = self.conv3_drop(x)
         x = F.elu(F.max_pool2d(self.conv4(x), (2, 2)))
         x = self.conv4_drop(x)
+        x = x.view(x.size(0), -1)
         x = self.fc1(x)
         return F.log_softmax(x, dim=1)

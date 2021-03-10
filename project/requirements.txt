@@ -8,3 +8,6 @@ librosa
 torchaudio==0.7.2
 torchvision==0.8.2
 pandas==1.2.2
+jupyterlab==3.0.9
+matplotlib==3.3.4
+librosa==0.8.0
