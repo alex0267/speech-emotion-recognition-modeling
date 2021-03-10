@@ -9,6 +9,7 @@ class Trainer(BaseTrainer):
     """
     Trainer class
     """
+
     def __init__(self, model, criterion, metric_ftns, optimizer, config, device,
                  data_loader, valid_data_loader=None, lr_scheduler=None, len_epoch=None):
         super().__init__(model, criterion, metric_ftns, optimizer, config)
@@ -37,9 +38,20 @@ class Trainer(BaseTrainer):
         :param epoch: Integer, current training epoch.
         :return: A log that contains average loss and metric in this epoch.
         """
-        self.model.train()
+
+        self.model.train()  # set model in "train" mode
         self.train_metrics.reset()
+        # if self.config["trainer"]["is_stacked"]:
+        #      source = [(torch.unbind(stacked_tensor), label) for stacked_tensor, label in self.data_loader]
+        #      source = [(tensor, item[1]) for item in source for tensor in item[0]]
+        # else:
+        #      source = self.data_loader
+
         for batch_idx, (data, target) in enumerate(self.data_loader):
+            print(f"batch_idx : {batch_idx}")
+            print(f"data : {data.shape}")
+            print(f"target : {target}")
+
             data, target = data.to(self.device), target.to(self.device)
 
             self.optimizer.zero_grad()
@@ -62,11 +74,12 @@ class Trainer(BaseTrainer):
 
             if batch_idx == self.len_epoch:
                 break
+
         log = self.train_metrics.result()
 
         if self.do_validation:
             val_log = self._valid_epoch(epoch)
-            log.update(**{'val_'+k : v for k, v in val_log.items()})
+            log.update(**{'val_' + k: v for k, v in val_log.items()})
 
         if self.lr_scheduler is not None:
             self.lr_scheduler.step()
