@@ -4,6 +4,8 @@ from torchvision.datasets.folder import ImageFolder as SoundFolder
 from pathlib import Path
 import torchaudio
 from torchvision import transforms, datasets
+from data_loader.transforms import PIPELINES
+import torch
 
 class MnistDataLoader(BaseDataLoader):
     """
@@ -19,6 +21,25 @@ class MnistDataLoader(BaseDataLoader):
         super().__init__(self.dataset, batch_size, shuffle, validation_split, num_workers)
 
 SND_EXTENSIONS = ('.wav')
+
+def collate_fn(batch):
+    data_list, label_list = [], []
+    for _data, _label in batch:
+        for tsr in torch.unbind(_data):
+            data_list.append(tsr)
+            label_list.append(_label)
+    return torch.stack(data_list).float(), torch.IntTensor(label_list)
+
+class DnnDataLoader(BaseDataLoader):
+    """
+    Dnn data loading using BaseDataLoader
+
+    """
+    def __init__(self, data_dir, batch_size, shuffle=True, validation_split=0.0, num_workers=1, training=True):
+        self.data_dir = data_dir
+        self.dataset = MySoundFolder(self.data_dir,loader=torchaudio.load,transform=PIPELINES["split"](52,56))
+        super().__init__(self.dataset, batch_size, shuffle, validation_split, num_workers,collate_fn=collate_fn)
+
 
 class MySoundFolder(SoundFolder):
     def __init__(
@@ -66,11 +87,4 @@ class MySoundFolder(SoundFolder):
             if self.target_transform is not None:
                 target = self.target_transform(target)
             return sample, target #sample (tensor, sample rate), target
-
-#data_transform = transforms.Compose([torchaudio.transforms.MelSpectrogram(sample_rate=44100),])
-#MySoundFolder(root=str(Path(Path(__file__).parent.parent,"data","raw_data")),
-#            transform=data_transform,
-#            loader=torchaudio.load)
-
-
 
