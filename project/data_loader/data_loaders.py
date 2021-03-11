@@ -23,6 +23,11 @@ class MnistDataLoader(BaseDataLoader):
 SND_EXTENSIONS = ('.wav')
 
 def collate_fn(batch):
+    """
+    flatten stacked tensors
+    :param batch:
+    :return:
+    """
     data_list, label_list = [], []
     for _data, _label in batch:
         for tsr in torch.unbind(_data):
@@ -35,7 +40,7 @@ class DnnDataLoader(BaseDataLoader):
     Dnn data loading using BaseDataLoader
 
     """
-    def __init__(self, data_dir, batch_size, shuffle=True, validation_split=0.0, num_workers=1, training=True):
+    def __init__(self, data_dir, batch_size, shuffle=True, validation_split=0.3, num_workers=1, training=True):
         self.data_dir = data_dir
         self.dataset = MySoundFolder(self.data_dir,loader=torchaudio.load,transform=PIPELINES["split"](52,56))
         super().__init__(self.dataset, batch_size, shuffle, validation_split, num_workers,collate_fn=collate_fn)

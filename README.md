@@ -32,11 +32,11 @@ A tool to create models to detect emotions in audio contents.
     -  test a minimal config
     
   what's missing : 
-    - normalise tensor at the entrance
-    - add upsampling
-    - todo for use of local tensorboard
-    - add data to mlflow
-    - document a simple way to launch on GCP
-    - add loss function
-    - more documentation 
+    - Normalise tensor at the entrance
+    - Add upsampling
+    - Todo for use of local tensorboard
+    - Add data to mlflow
+    - Document a simple way to launch on GCP
+    - Add loss function
+    - More documentation 
     - BUG: when using more than one worker, there's a bug in the serialization process 

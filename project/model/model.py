@@ -30,13 +30,10 @@ class DnnModel(BaseModel):
         self.seed = torch.manual_seed(seed)
         self.conv1 = nn.Conv2d(in_channels=1, out_channels=16, kernel_size=(3, 3), stride=(1, 1))
         self.conv1_drop = nn.Dropout2d(p=dropout)
-
         self.conv2 = nn.Conv2d(in_channels=16, out_channels=32, kernel_size=(3, 3), stride=(1, 1))
         self.conv2_drop = nn.Dropout2d(p=dropout)
-
         self.conv3 = nn.Conv2d(in_channels=32, out_channels=64, kernel_size=(3, 3), stride=(1, 1))
         self.conv3_drop = nn.Dropout2d(p=dropout)
-
         self.conv4 = nn.Conv2d(in_channels=64, out_channels=64, kernel_size=(3, 3), stride=(1, 1))
         self.conv4_drop = nn.Dropout2d(p=dropout)
         self.fc1 = nn.Linear(64*4, num_classes)
