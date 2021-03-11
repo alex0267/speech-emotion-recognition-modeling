@@ -2,6 +2,17 @@
 # speech-emotion-recognition-modeling
 A tool to create models to detect emotions in audio contents.
 
+### Install
+
+If `pip install -r ./requirments.txt` complains about llvm:
+
+`brew install llvm@9`
+
+and: 
+
+`echo 'export PATH="/usr/local/opt/llvm@9/bin:$PATH"' >> ~/.zshrc`
+`echo 'export LDFLAGS="-L/usr/local/opt/llvm@9/lib"' >> ~/.zshrc`
+`echo 'export CPPFLAGS="-I/usr/local/opt/llvm@9/include"' >> ~/.zshrc`
 
 #### TODO 
 - tracking experiments ✅
