@@ -21,7 +21,7 @@ A tool to create models to detect emotions in audio contents.
       reference :
          https://dvc.org/doc/use-cases/sharing-data-and-model-files
          
-- build a mvp for the projet
+- build a mvp for the projet ✅
   -  reformat data pre treatment
     - add pitch modulation
         https://wiki.audacityteam.org/wiki/SoundTouch
@@ -30,3 +30,13 @@ A tool to create models to detect emotions in audio contents.
   -  add them in a data loader
     -  add the correct model
     -  test a minimal config
+    
+  what's missing : 
+    - normalise tensor at the entrance
+    - add loss function
+    - add upsampling
+    - todo for use of local tensorboard
+    - add data to mlflow
+    - document a simple way to launch on GCP
+    - more documentation 
+    
