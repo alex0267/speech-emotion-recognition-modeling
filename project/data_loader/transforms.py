@@ -5,6 +5,7 @@ from torchvision.transforms import Lambda
 from functools import partial
 from torchvision.transforms import Compose
 from torchaudio.transforms import MelSpectrogram
+from torchvision import transforms
 
 
 def to_mel_spectrogram(sample: tuple, n_mels: int):  # -> channel*#n_mels*dim
@@ -57,6 +58,7 @@ def overlapping_patches(sample: tuple, length: float, n_mels: int = 56):
 
 PIPELINES = {"split": lambda length, n_mels: Compose([
                  partial(to_mel_spectrogram, n_mels=n_mels),
+                 transforms.Normalize((4.5897555,), (16.177462,)),
                  partial(split_into_patches, length=length),
                  Lambda(lambda patchs: torch.stack([patch for patch in patchs]))]),
              "overlapping": lambda length, n_mels: Compose([
@@ -64,3 +66,11 @@ PIPELINES = {"split": lambda length, n_mels: Compose([
                  partial(overlapping_patches, length=length),
                  Lambda(lambda patchs: torch.stack([patch[0] for patch in patchs]))
              ])}
+
+# import numpy as np
+# items=MySoundFolder(root=str(Path(ROOT,"data","raw_data")),loader=torchaudio.load,transform=PIPELINES["split"](52,56))
+# out = [item[0] for item in items]
+# out = [torch.unbind(item) for item in out]
+# out = torch.stack([subitem for subitem in item for item in out]).float().numpy()
+# mn=np.mean(out, axis=(0,1,2))
+# st=np.std(out, axis=(0,1,2))
