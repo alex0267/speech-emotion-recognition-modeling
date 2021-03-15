@@ -41,17 +41,8 @@ class Trainer(BaseTrainer):
 
         self.model.train()  # set model in "train" mode
         self.train_metrics.reset()
-        # if self.config["trainer"]["is_stacked"]:
-        #      source = [(torch.unbind(stacked_tensor), label) for stacked_tensor, label in self.data_loader]
-        #      source = [(tensor, item[1]) for item in source for tensor in item[0]]
-        # else:
-        #      source = self.data_loader
 
         for batch_idx, (data, target) in enumerate(self.data_loader):
-            print(f"batch_idx : {batch_idx}")
-            print(f"data : {data.shape}")
-            print(f"target : {target}")
-
             data, target = data.to(self.device), target.to(self.device)
 
             self.optimizer.zero_grad()
