@@ -20,7 +20,7 @@ and:
    data are stored in the google cloud storage bucket "wewyse-centralesupelec-ftv-data"
 - choose a template for DS project
 - integrate [this](https://github.com/victoresque/pytorch-template) project template ✅   
-- configure dvc backend ✅  
+- configure dvc backend ✅
 
       dvc init
       either use a `gcloud auth application-default login``
@@ -34,9 +34,7 @@ and:
          
 - build a mvp for the projet ✅
   -  reformat data pre treatment
-    - add pitch modulation
-        https://wiki.audacityteam.org/wiki/SoundTouch
-        http://www.surina.net/soundtouch/
+    - add pitch modulation using pyaudio 
     - add creation of overlapping windows 
   -  add them in a data loader
     -  add the correct model
