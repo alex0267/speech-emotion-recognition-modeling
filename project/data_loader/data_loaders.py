@@ -22,10 +22,10 @@ class MnistDataLoader(BaseDataLoader):
         self,
         data_dir,
         batch_size,
-        shuffle=True,
         validation_split=0.0,
         num_workers=1,
         training=True,
+        shuffle=True,
     ):
         trsfm = transforms.Compose(
             [transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))]
@@ -35,7 +35,7 @@ class MnistDataLoader(BaseDataLoader):
             self.data_dir, train=training, download=True, transform=trsfm
         )
         super().__init__(
-            self.dataset, batch_size, shuffle, validation_split, num_workers
+            self.dataset, batch_size, validation_split, num_workers, shuffle=shuffle
         )
 
 
@@ -83,13 +83,9 @@ class DnnDataLoader(BaseDataLoader):
             [class_index for _, class_index in self.dataset], return_counts=True
         )
         emotion_count = dict(zip(unique, counts))
-
         total_count = sum(counts)
 
-        emotion_weights_dict = dict()
-        for k, v in emotion_count.items():
-            emotion_weights_dict[k] = total_count / v
-        return emotion_weights_dict
+        return {k: total_count / v for k, v in emotion_count.items()}
 
     def _split_sampler(self, split):
         if split == 0.0:
@@ -110,18 +106,15 @@ class DnnDataLoader(BaseDataLoader):
             len_valid = int(self.n_samples * split)
 
         valid_idx = idx_full[0:len_valid]
-        train_idx = np.delete(idx_full, np.arange(0, len_valid))
-
-        # train_sampler = SubsetRandomSampler(train_idx)
         valid_sampler = SubsetRandomSampler(valid_idx)
-        train_data = np.take(self.dataset, train_idx)
+
+        train_idx = np.delete(idx_full, np.arange(0, len_valid))
         emotion_dict = self._get_class_weights()
         emotion_weights = [
-            emotion_dict[class_index] for _, class_index in self.dataset.imgs
+            emotion_dict[self.dataset[i][1]]
+            for i in train_idx
         ]
         train_sampler = WeightedRandomSampler(emotion_weights, len(train_idx))
-
-        # import ipdb; ipdb.set_trace()
 
         # turn off shuffle option which is mutually exclusive with sampler
         self.shuffle = False

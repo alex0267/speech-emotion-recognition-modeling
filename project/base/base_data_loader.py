@@ -16,9 +16,10 @@ class BaseDataLoader(DataLoader):
         validation_split,
         num_workers,
         collate_fn=default_collate,
+        shuffle=False
     ):
         self.validation_split = validation_split
-        self.shuffle = False
+        self.shuffle = shuffle
 
         self.batch_idx = 0
         self.n_samples = len(dataset)
