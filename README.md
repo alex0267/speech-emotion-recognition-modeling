@@ -43,8 +43,8 @@ and:
   what's missing : 
     - Normalise tensor at the entrance
     - Add upsampling
-    - Todo for use of local tensorboard
     - Add data to mlflow
+    - Todo for use of local tensorboard
     - Document a simple way to launch on GCP
     - Add loss function
     - More documentation 
