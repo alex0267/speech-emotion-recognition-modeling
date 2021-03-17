@@ -3,7 +3,7 @@ import torch
 from torchvision.utils import make_grid
 from base import BaseTrainer
 from utils import inf_loop, MetricTracker
-
+import mlflow
 
 class Trainer(BaseTrainer):
     """
@@ -40,21 +40,23 @@ class Trainer(BaseTrainer):
         """
 
         self.model.train()  # set model in "train" mode
-        self.train_metrics.reset()
+        self.train_metrics.reset() # set metrics to 0
 
-        for batch_idx, (data, target) in enumerate(self.data_loader):
+        for batch_idx, (data, target) in enumerate(self.data_loader): #for each batch
             data, target = data.to(self.device), target.to(self.device)
 
-            self.optimizer.zero_grad()
-            output = self.model(data)
-            loss = self.criterion(output, target)
-            loss.backward()
-            self.optimizer.step()
+            self.optimizer.zero_grad() #sets the gradients of all optimized torch.Tensor` s to zero.
+            output = self.model(data) #first forward pass
+            loss = self.criterion(output, target) #loss calculus
+            loss.backward() #Computes the gradient of current tensor w.r.t. graph leaves.
+            self.optimizer.step() #calculus for the currrent step
 
             self.writer.set_step((epoch - 1) * self.len_epoch + batch_idx)
-            self.train_metrics.update('loss', loss.item())
+            self.train_metrics.update('loss', loss.item()) #update loss metric
             for met in self.metric_ftns:
                 self.train_metrics.update(met.__name__, met(output, target))
+                if self.config["mlflow"]["experiment_name"]:
+                    mlflow.log_metric(met.__name__, met(output, target))
 
             if batch_idx % self.log_step == 0:
                 self.logger.debug('Train Epoch: {} {} Loss: {:.6f}'.format(

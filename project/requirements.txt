@@ -9,3 +9,4 @@ pandas>=1.2.2
 jupyterlab==3.0.9
 matplotlib==3.3.4
 librosa==0.8.0
+mlflow
