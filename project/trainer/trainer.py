@@ -5,6 +5,7 @@ from base import BaseTrainer
 from utils import inf_loop, MetricTracker
 import mlflow
 
+
 class Trainer(BaseTrainer):
     """
     Trainer class
@@ -74,6 +75,13 @@ class Trainer(BaseTrainer):
             val_log = self._valid_epoch(epoch)
             log.update(**{'val_' + k: v for k, v in val_log.items()})
 
+        if self.do_validation:
+            val_log = self._valid_epoch(epoch)
+            log.update(**{'val_' + k: v for k, v in val_log.items()})
+            if self.config["mlflow"]["experiment_name"]:
+                for k, v in val_log.items():
+                    mlflow.log_metric('val_' + k,v)
+
         if self.lr_scheduler is not None:
             self.lr_scheduler.step()
         return log
@@ -96,9 +104,15 @@ class Trainer(BaseTrainer):
 
                 self.writer.set_step((epoch - 1) * len(self.valid_data_loader) + batch_idx, 'valid')
                 self.valid_metrics.update('loss', loss.item())
+                if self.config["mlflow"]["experiment_name"]:
+                    mlflow.log_metric('loss', loss.item())
+
                 for met in self.metric_ftns:
                     self.valid_metrics.update(met.__name__, met(output, target))
-                self.writer.add_image('input', make_grid(data.cpu(), nrow=8, normalize=True))
+                    if self.config["mlflow"]["experiment_name"]:
+                        mlflow.log_metric(met.__name__, met(output, target))
+
+            self.writer.add_image('input', make_grid(data.cpu(), nrow=8, normalize=True))
 
         # add histogram of model parameters to the tensorboard
         for name, p in self.model.named_parameters():

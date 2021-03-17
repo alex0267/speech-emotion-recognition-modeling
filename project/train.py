@@ -10,6 +10,7 @@ from parse_config import ConfigParser
 from trainer import Trainer
 from utils import prepare_device
 import mlflow
+import pprint
 
 
 # fix random seeds for reproducibility
@@ -49,7 +50,16 @@ def main(config):
     if config["mlflow"]["experiment_name"]:
         mlflow.set_tracking_uri(config["mlflow"]["tracking_uri"])
         mlflow.set_experiment(config["mlflow"]["experiment_name"])
-        mlflow.log_param("config", config)
+        mlflow.log_param("n_gpu", config.config["n_gpu"])
+        mlflow.log_param("arch", dict(config.config["arch"]))
+        mlflow.log_param("data_loader", dict(config.config["data_loader"]))
+        mlflow.log_param("optimizer", config.config["optimizer"])
+        mlflow.log_param("loss", config.config["loss"])
+        mlflow.log_param("metrics", config.config["metrics"])
+        mlflow.log_param("lr_scheduler", config.config["lr_scheduler"])
+        mlflow.log_param("trainer", config.config["trainer"])
+        mlflow.log_param("mlflow", config.config["mlflow"])
+
 
     trainer = Trainer(model, criterion, metrics, optimizer,
                       config=config,
