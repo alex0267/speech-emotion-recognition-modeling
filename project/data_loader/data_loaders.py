@@ -53,7 +53,7 @@ class MySoundFolder(SoundFolder):
             transform: Optional[Callable] = None,
             target_transform: Optional[Callable] = None,
             loader: Callable[[str], Any]=None,
-            is_valid_file: Optional[Callable[[str], bool]] = lambda item: Path(item).suffix in SND_EXTENSIONS,
+            is_valid_file: Optional[Callable[[str], bool]] = lambda item: (Path(item).suffix in SND_EXTENSIONS and (not item.endswith('gitignore'))),
     ) -> None:
         super(MySoundFolder, self).__init__(root, transform,target_transform,loader,is_valid_file)
         self.imgs = self.samples
