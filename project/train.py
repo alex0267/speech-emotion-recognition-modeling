@@ -9,6 +9,7 @@ import model.model as module_arch
 from parse_config import ConfigParser
 from trainer import Trainer
 from utils import prepare_device
+import mlflow
 
 
 # fix random seeds for reproducibility
@@ -44,12 +45,19 @@ def main(config):
     optimizer = config.init_obj('optimizer', torch.optim, trainable_params)
     lr_scheduler = config.init_obj('lr_scheduler', torch.optim.lr_scheduler, optimizer)
 
+    #mlflow setup
+    if config["mlflow"]["experiment_name"]:
+        mlflow.set_tracking_uri(config["mlflow"]["tracking_uri"])
+        mlflow.set_experiment(config["mlflow"]["experiment_name"])
+        mlflow.log_param("config", config)
+
     trainer = Trainer(model, criterion, metrics, optimizer,
                       config=config,
                       device=device,
                       data_loader=data_loader,
                       valid_data_loader=valid_data_loader,
                       lr_scheduler=lr_scheduler)
+
 
     trainer.train()
 

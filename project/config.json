@@ -45,5 +45,9 @@
         "monitor": "min val_loss",
         "early_stop": 10,
         "tensorboard": true
+    },
+    "mlflow":{
+        "experiment_name": "my experiment",
+        "tracking_uri": "./mlruns"
     }
 }
