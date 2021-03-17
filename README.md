@@ -39,11 +39,11 @@ and:
   -  add them in a data loader
     -  add the correct model
     -  test a minimal config
-    
-  what's missing : 
     - Normalise tensor at the entrance
-    - Add upsampling
     - Add data to mlflow
+            
+  what's missing : 
+    - Add upsampling
     - Todo for use of local tensorboard
     - Document a simple way to launch on GCP
     - Add loss function
