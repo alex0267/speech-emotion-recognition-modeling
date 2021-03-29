@@ -41,9 +41,9 @@ and:
     -  test a minimal config
     - Normalise tensor at the entrance
     - Add data to mlflow
-            
-  what's missing : 
     - Add upsampling
+    - launch with Adam optimizer and SGD with momentum            
+  what's missing : 
     - Todo for use of local tensorboard
     - Document a simple way to launch on GCP
     - Add loss function

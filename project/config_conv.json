@@ -3,7 +3,7 @@
     "n_gpu": 1,
 
     "arch": {
-        "type": "DnnModel",
+        "type": "DnnModel ",
         "args": {
             "seed": 42,
             "num_classes": 5
@@ -19,11 +19,11 @@
         }
     },
     "optimizer": {
-        "type": "Adam",
+        "type": "SGD",
         "args":{
-            "lr": 0.001,
-            "weight_decay": 0,
-            "amsgrad": true
+            "lr":0.1,
+            "momentum":0.5,
+            "weight_decay": 0
         }
     },
     "loss": "nll_loss",
@@ -48,6 +48,6 @@
     },
     "mlflow":{
         "experiment_name": "speech-emotion-recognition-modelling",
-        "tracking_uri": "http://34.78.164.178:80"
+        "tracking_uri": "http://34.76.183.249:80"
     }
 }
