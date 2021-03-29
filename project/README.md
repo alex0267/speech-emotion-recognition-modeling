@@ -148,7 +148,12 @@ Config files are in `.json` format:
     "early_stop": 10	                 // number of epochs to wait before early stop. set 0 to disable.
   
     "tensorboard": true,               // enable tensorboard visualization
-  }
+  },
+  "mlflow":{
+          "experiment_name": "speech-emotion-recognition-modelling", //name of the mlflow  experiment
+          "tracking_uri": "http://34.78.164.178:80" //"tracking data" storage, either locally (given a relative path) 
+                                                        or if your mlflow server is on a dedicated instance, http://<ip adresse>:80 
+      }  
 }
 ```
 
