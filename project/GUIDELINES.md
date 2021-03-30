@@ -1,7 +1,18 @@
 #### Guidelines for a fresh install and training
 
 ---
+This guide should permit you to :
+- launch symply the training of a deep learning model using pytorch. 
+- track your results in a mlflow server
 
+Two cases are considered: 
+
+- you want to train your model and track your results on a distant mlflow server 
+    
+- you want to train your model and track your results on a local mlflow server 
+          
+
+---
 
 - ##### train on an instance and track your experiments in a distant mlflow server
     
@@ -26,6 +37,12 @@
         pip install -r requirements.txt
         ```
     - install [dvc](https://dvc.org/) 
+    - set up dvc using this command 
+        ```
+        dvc remote add --default ftv-data \
+                                         gs://wewyse-centralesupelec-ftv-data/raw_data
+        ```
+
     - grab data locally using the following command 
         ```
         dvc pull
@@ -53,6 +70,13 @@
         ```
         python train.py -c config.json
         ``` 
+    - You can see your results at  "http://<ip adress of your instance>:5000"
+    - You'll be prompted for your login and password. 
+      You can change or set a new one using this command in you mlflow instance : 
+        ```
+        sudo htpasswd -c /etc/nginx/.htpasswd <USERNAME>
+        ```
+        
 - ##### train on an instance and track your experiments in local using mlflow
     Same process but ignore all items related to the distant mlflow server.
     in the config.json file, in the "mlflow" part change the following values
