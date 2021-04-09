@@ -60,8 +60,11 @@ def convert(inputfile, outputfile):
 
     command = [
         "ffmpeg",
+        "-y",
         "-i",
         inputfile,
+        "-ac",
+        "1",
         "-hide_banner",
         "-loglevel",
         "error",
@@ -71,23 +74,13 @@ def convert(inputfile, outputfile):
     if inputfile_type == "webm":
         command = [
             "ffmpeg",
-            "-i",
-            inputfile,
-            "-c:a",
-            "pcm_f32le",
-            "-hide_banner",
-            "-loglevel",
-            "error",
-            outputfile,
-        ]
-
-    if inputfile_type == "mp4":
-        command = [
-            "ffmpeg",
+            "-y",
             "-i",
             inputfile,
             "-ac",
-            "2",
+            "1",
+            "-c:a",
+            "pcm_f32le",
             "-hide_banner",
             "-loglevel",
             "error",
@@ -120,6 +113,12 @@ def main():
             )
             # Download the blob
             download_blob("swa-dev-bucket", Path(r[1]).name, temp_file)
+            # Remove dvc tracking
+            subprocess.run(
+                ["dvc", "remove", str(final_file) + ".dvc"],
+                stdout=subprocess.PIPE,
+                stdin=subprocess.PIPE,
+            )
             # Convert to wav format
             convert(temp_file, final_file)
             # Add to dvc tracking
