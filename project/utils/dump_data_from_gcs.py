@@ -46,21 +46,54 @@ def format_data(data):
 
 
 def guess_filetype(filename):
-    return filetype.guess(filename).extension
+    ftype = filetype.guess(filename)
+    if ftype:
+        return ftype.extension
 
 
 def convert(inputfile, outputfile):
+    """
+    Converts different file formats to .wav
+    Beware: application/octet-stream are not handled yet
+    """
+    inputfile_type = guess_filetype(str(inputfile))
+
     command = [
         "ffmpeg",
         "-i",
         inputfile,
-        "-c:a",
-        "pcm_f32le",
         "-hide_banner",
         "-loglevel",
         "error",
         outputfile,
     ]
+
+    if inputfile_type == "webm":
+        command = [
+            "ffmpeg",
+            "-i",
+            inputfile,
+            "-c:a",
+            "pcm_f32le",
+            "-hide_banner",
+            "-loglevel",
+            "error",
+            outputfile,
+        ]
+
+    if inputfile_type == "mp4":
+        command = [
+            "ffmpeg",
+            "-i",
+            inputfile,
+            "-ac",
+            "2",
+            "-hide_banner",
+            "-loglevel",
+            "error",
+            outputfile,
+        ]
+
     subprocess.run(command, stdout=subprocess.PIPE, stdin=subprocess.PIPE)
 
 
@@ -72,13 +105,14 @@ def main():
         db.query(Record).filter(Record.timestamp >= datetime(2021, 3, 1)).all()
     )
 
+    print("You have that many record: " + str(len(records)))
     # Create subfolders per emotion if they do not exist
     root_final_output = Path("../data/raw_data/french")
     for emotion in EMOTION_MAP.values():
         Path.mkdir(root_final_output.joinpath(emotion), exist_ok=True)
     with tempfile.TemporaryDirectory() as tmpdirname:
         print("Created temporary directory: ", tmpdirname)
-        for r in records[:200]:
+        for r in records:
             temp_file = Path(tmpdirname).joinpath("_".join([EMOTION_MAP[r[2]], r[-2]]))
             final_file = root_final_output.joinpath(
                 EMOTION_MAP[r[2]],
