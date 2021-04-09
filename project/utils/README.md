@@ -20,3 +20,6 @@ not the desired behavior:
             )
 
 ```
+
+NB2: Please refer to Speech Web App to learn how to handle the configuration and the required environmental
+variable together with Google Cloud authentification.
