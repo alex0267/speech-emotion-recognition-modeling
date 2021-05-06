@@ -87,3 +87,5 @@ Two cases are considered:
         mlflow ui 
         ```
 
+    NB: If you are training on an OSX system the default number of files is extremly low (256),
+    which can crash mlflow. You can increase the number with `sudo launchctl limit maxfiles 65536 200000`.

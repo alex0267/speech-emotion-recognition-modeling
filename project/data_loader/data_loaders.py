@@ -4,13 +4,13 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, cast
 import numpy as np
 import torch
 import torchaudio
+from base import BaseDataLoader
 from torch.utils.data import DataLoader, WeightedRandomSampler
 from torch.utils.data.sampler import SubsetRandomSampler
 from torchvision import datasets, transforms
 from torchvision.datasets.folder import ImageFolder as SoundFolder
 
-from base import BaseDataLoader
-from data_loader.transforms import PIPELINES
+from data_loader.transforms import pipelines
 
 
 class MnistDataLoader(BaseDataLoader):
@@ -42,6 +42,10 @@ class MnistDataLoader(BaseDataLoader):
 SND_EXTENSIONS = ".wav"
 
 
+def is_sound_file(item: str) -> bool:
+    return Path(item).suffix in SND_EXTENSIONS and (not item.endswith("gitignore"))
+
+
 def collate_fn(batch):
     """
     flatten stacked tensors
@@ -63,11 +67,17 @@ class DnnDataLoader(BaseDataLoader):
     """
 
     def __init__(
-        self, data_dir, batch_size, validation_split=0.3, num_workers=1, training=True
+        self,
+        data_dir,
+        batch_size,
+        validation_split=0.3,
+        num_workers=1,
     ):
         self.data_dir = data_dir
         self.dataset = MySoundFolder(
-            self.data_dir, loader=torchaudio.load, transform=PIPELINES["split"](52, 56)
+            self.data_dir,
+            loader=torchaudio.load,
+            transform=pipelines("split", length=52, n_mels=56),
         )
 
         super().__init__(
@@ -110,10 +120,7 @@ class DnnDataLoader(BaseDataLoader):
 
         train_idx = np.delete(idx_full, np.arange(0, len_valid))
         emotion_dict = self._get_class_weights()
-        emotion_weights = [
-            emotion_dict[self.dataset[i][1]]
-            for i in train_idx
-        ]
+        emotion_weights = [emotion_dict[self.dataset[i][1]] for i in train_idx]
         train_sampler = WeightedRandomSampler(emotion_weights, len(train_idx))
 
         # turn off shuffle option which is mutually exclusive with sampler
@@ -130,14 +137,15 @@ class MySoundFolder(SoundFolder):
         transform: Optional[Callable] = None,
         target_transform: Optional[Callable] = None,
         loader: Callable[[str], Any] = None,
-        is_valid_file: Optional[Callable[[str], bool]] = lambda item: (
-            Path(item).suffix in SND_EXTENSIONS
-        )
-        and (not item.endswith("gitignore")),
+        is_valid_file: Optional[Callable[[str], bool]] = None,
     ) -> None:
+
+        is_valid_file = is_valid_file or is_sound_file
+
         super(MySoundFolder, self).__init__(
             root, transform, target_transform, loader, is_valid_file
         )
+
         self.imgs = self.samples
 
     def __len__(self) -> int:
