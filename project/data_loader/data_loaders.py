@@ -12,6 +12,8 @@ from torchvision.datasets.folder import ImageFolder as SoundFolder
 
 from data_loader.transforms import pipelines
 
+torchaudio.set_audio_backend("sox_io")
+
 
 class MnistDataLoader(BaseDataLoader):
     """
@@ -165,7 +167,8 @@ class MySoundFolder(SoundFolder):
         _case = divmod(index, 3)[1]
         path, target = self.samples[_index]
         sample = self.loader(path)
-        info = torchaudio.info(path)[0]
+        metadata = torchaudio.info(path)
+        sample_rate = metadata.sample_rate
         # channels (Optional[int]) – The number of channels
         # rate (Optional[float]) – Sampleing rate
         # precision (Optional[int]) – Bit depth
@@ -174,12 +177,12 @@ class MySoundFolder(SoundFolder):
         if _case == 1:
             effects = [["pitch", "90"]]
             sample = apply_effects_tensor(
-                sample[0], effects=effects, sample_rate=int(info.rate)
+                sample[0], effects=effects, sample_rate=int(sample_rate)
             )
         if _case == 2:
             effects = [["pitch", "-90"]]
             sample = apply_effects_tensor(
-                sample[0], effects=effects, sample_rate=int(info.rate)
+                sample[0], effects=effects, sample_rate=int(sample_rate)
             )
         if self.transform is not None:
             sample = self.transform(sample)
