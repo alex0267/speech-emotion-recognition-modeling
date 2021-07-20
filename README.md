@@ -51,7 +51,10 @@ and:
     - publish a docker image
     - destroy a docker image
     - launch a training 
-    - launch an inference 
+    - launch an inference
+    - launch mlflow server instance
+    - stop mlflow server
+    - destroy mlflow server instance  
 
   what's missing : 
     - Todo for use of local tensorboard
