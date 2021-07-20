@@ -1,6 +1,5 @@
 import argparse
 import collections
-import pprint
 
 import mlflow
 import numpy as np
@@ -17,7 +16,6 @@ from utils import prepare_device
 
 torch.multiprocessing.set_sharing_strategy("file_system")
 
-
 # fix random seeds for reproducibility
 SEED = 123
 torch.manual_seed(SEED)
@@ -26,7 +24,7 @@ torch.backends.cudnn.benchmark = False
 np.random.seed(SEED)
 
 
-def main(config):
+def main(config : ConfigParser):
     logger = config.get_logger("train")
 
     # setup data_loader instances
@@ -113,5 +111,5 @@ if __name__ == "__main__":
             ["--bs", "--batch_size"], type=int, target="data_loader;args;batch_size"
         ),
     ]
-    config = ConfigParser.from_args(args, options)
+    config : ConfigParser = ConfigParser.from_args(args, options)
     main(config)

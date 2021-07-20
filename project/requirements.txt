@@ -2,7 +2,6 @@ torch>=1.1
 numpy
 tqdm
 tensorboard>=1.14
-pandas
 torchaudio==0.7.2
 torchvision==0.8.2
 pandas>=1.2.2
@@ -12,3 +11,4 @@ librosa==0.8.0
 mlflow
 google-cloud-storage>=1.36.2
 dill>=0.3.3
+invoke>=1.6.0
