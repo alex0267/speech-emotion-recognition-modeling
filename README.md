@@ -43,9 +43,19 @@ and:
     - Add data to mlflow
     - Add upsampling
     - launch with Adam optimizer and SGD with momentum            
+
+- add a tool to help for administrative tasks : 
+    - launch a gcp instance
+    - stop a gcp instance
+    - destroy a gcp instance
+    - publish a docker image
+    - destroy a docker image
+    - launch a training 
+    - launch an inference 
+
   what's missing : 
     - Todo for use of local tensorboard
     - Document a simple way to launch on GCP
-    - Add loss function
+    - Add loss functions
     - More documentation 
     - BUG: when using more than one worker, there's a bug in the serialization process 
