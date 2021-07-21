@@ -45,13 +45,16 @@ and:
     - launch with Adam optimizer and SGD with momentum            
 
 - add a tool to help for administrative tasks : 
+    - publish a docker image
+    - destroy a docker image✅
+    
     - launch a gcp instance
     - stop a gcp instance
     - destroy a gcp instance
-    - publish a docker image
-    - destroy a docker image
+    
     - launch a training 
     - launch an inference
+    
     - launch mlflow server instance
     - stop mlflow server
     - destroy mlflow server instance  
