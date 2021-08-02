@@ -13,6 +13,8 @@ import model.model as module_arch
 from parse_config import ConfigParser
 from trainer import Trainer
 from utils import prepare_device
+from typing import Tuple, NamedTuple
+
 
 torch.multiprocessing.set_sharing_strategy("file_system")
 
@@ -24,8 +26,12 @@ torch.backends.cudnn.benchmark = False
 np.random.seed(SEED)
 
 
-def main(config : ConfigParser):
-    logger = config.get_logger("train")
+def main(config: ConfigParser):
+    """
+    launch training
+    :param config:
+    :return:
+    """
 
     # setup data_loader instances
     data_loader = config.init_obj("data_loader", module_data)
@@ -33,6 +39,7 @@ def main(config : ConfigParser):
 
     # build model architecture, then print to console
     model = config.init_obj("arch", module_arch)
+    logger = config.get_logger("train")
     logger.info(model)
 
     # prepare for (multi-device) GPU training
@@ -79,6 +86,53 @@ def main(config : ConfigParser):
     trainer.train()
 
 
+def gcp_value_from_metadata(name: str) -> Tuple[str, str]:
+    """
+    get metadata value named name
+    :param name:
+    :return: a tuple with output and error
+    """
+    import subprocess
+
+    process = subprocess.Popen(
+        [
+            f"$(curl http://metadata/computeMetadata/v1/instance/attributes/{name}",
+            "-H",
+            "Metadata-Flavor: Google",
+        ],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        universal_newlines=True,
+    )
+    stdout, stderr = process.communicate()
+    return stdout, stderr
+
+
+def stop_gcp_instance() -> None:
+    """
+    stop current gcp instance using metadata
+    :return:
+    """
+    from googleapiclient import discovery
+    from googleapiclient.discovery import Resource
+    from oauth2client.client import GoogleCredentials
+    import logging
+
+    credentials = GoogleCredentials.get_application_default()
+    service: Resource = discovery.build("compute", "v1", credentials=credentials)
+
+    project: str = gcp_value_from_metadata("project_id")[0]
+    zone: str = gcp_value_from_metadata("zone")[0]
+    instance: str = gcp_value_from_metadata("name")[0]
+
+    if project and zone and instance:
+        request = service.instances().stop(
+            project=project, zone=zone, instance=instance
+        )
+        response = request.execute()
+        logging.info(f"stop results {response}")
+
+
 if __name__ == "__main__":
     args = argparse.ArgumentParser(description="PyTorch Template")
     args.add_argument(
@@ -104,12 +158,13 @@ if __name__ == "__main__":
     )
 
     # custom cli options to modify configuration from default values given in json file.
-    CustomArgs = collections.namedtuple("CustomArgs", "flags type target")
-    options = [
+    CustomArgs: NamedTuple = collections.namedtuple("CustomArgs", "flags type target")
+    options: list[CustomArgs] = [
         CustomArgs(["--lr", "--learning_rate"], type=float, target="optimizer;args;lr"),
         CustomArgs(
             ["--bs", "--batch_size"], type=int, target="data_loader;args;batch_size"
         ),
     ]
-    config : ConfigParser = ConfigParser.from_args(args, options)
+    config: ConfigParser = ConfigParser.from_args(args, options)
     main(config)
+    stop_gcp_instance()
