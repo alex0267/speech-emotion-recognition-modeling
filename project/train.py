@@ -86,26 +86,17 @@ def main(config: ConfigParser):
     trainer.train()
 
 
-def gcp_value_from_metadata(name: str) -> Tuple[str, str]:
+def gcp_value_from_metadata(name: str) -> str:
     """
     get metadata value named name
     :param name:
     :return: a tuple with output and error
     """
-    import subprocess
 
-    process = subprocess.Popen(
-        [
-            f"$(curl http://metadata/computeMetadata/v1/instance/attributes/{name}",
-            "-H",
-            "Metadata-Flavor: Google",
-        ],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        universal_newlines=True,
-    )
-    stdout, stderr = process.communicate()
-    return stdout, stderr
+    import os
+    stream = os.popen(f"echo $(curl http://metadata.google.internal/computeMetadata/v1/instance/attributes/{name} -H 'Metadata-Flavor: Google')")
+    output = stream.read().strip()
+    return output
 
 
 def stop_gcp_instance() -> None:
@@ -121,9 +112,9 @@ def stop_gcp_instance() -> None:
     credentials = GoogleCredentials.get_application_default()
     service: Resource = discovery.build("compute", "v1", credentials=credentials)
 
-    project: str = gcp_value_from_metadata("project_id")[0]
-    zone: str = gcp_value_from_metadata("zone")[0]
-    instance: str = gcp_value_from_metadata("name")[0]
+    project: str = gcp_value_from_metadata("project_id")
+    zone: str = gcp_value_from_metadata("zone")
+    instance: str = gcp_value_from_metadata("name")
 
     if project and zone and instance:
         request = service.instances().stop(

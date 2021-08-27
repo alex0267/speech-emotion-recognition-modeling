@@ -119,6 +119,9 @@ def create_instance(
     create an instance on GCP
     using a standard image provided by gcp
     invoke create-instance --name=test-instance --image-project=debian-cloud --image-family=debian-9
+    ou
+    invoke create-instance --name=test-instance --image-project=deeplearning-platform-release --image-family=pytorch-latest-cpu
+
     same command using gpu
     invoke create-instance --name=test-instance --image-project=deeplearning-platform-release --image-family=pytorch-latest-gpu --using-gpu
 
@@ -133,14 +136,18 @@ def create_instance(
         c.run("echo 'name parameter is mandatory'")
         return
 
+
     metadata_string = f"project_id={project_id},zone={zone},name={name}"
     if using_gpu:
         metadata_string += f",install-nvidia-driver=True"
 
     if remote_image_name:
         # custom image type
-        command = f"gcloud compute instances create-with-container '{name}'  \
-               --container-image 'eu.gcr.io/{project_id}/{remote_image_name}:latest ' --zone='{zone}' --maintenance-policy=TERMINATE \
+        command = f"gcloud compute instances create-with-container {name}   \
+               --boot-disk-size=32G --boot-disk-device-name={name}  \
+               --container-image eu.gcr.io/{project_id}/{remote_image_name} --zone={zone} \
+               --maintenance-policy=TERMINATE  \
+               --scopes https://www.googleapis.com/auth/cloud-platform \
                --metadata='{metadata_string}'"
         if using_gpu:
             command += " --accelerator='type=nvidia-tesla-v100,count=1'"
@@ -151,6 +158,7 @@ def create_instance(
             command = f"gcloud compute instances create '{name}' --zone='{zone}'  --maintenance-policy=TERMINATE \
             --image-family='{image_family}' \
             --image-project='{image_project}' \
+            --scopes https://www.googleapis.com/auth/cloud-platform \
             --metadata='{metadata_string}'"
             if using_gpu:
                 command += " --accelerator='type=nvidia-tesla-v100,count=1'"
@@ -160,14 +168,15 @@ def create_instance(
                 --image-family='{Config.GPU_INSTANCE_DEFAULT_PARAMS['family']}' \
                 --image-project='{Config.GPU_INSTANCE_DEFAULT_PARAMS['project']}' \
                 --accelerator='type=nvidia-tesla-v100,count=1' \
+                --scopes https://www.googleapis.com/auth/cloud-platform \
                 --metadata='{metadata_string}'"
             else:
                 command = f"gcloud compute instances create '{name}' --zone='{zone}'  --maintenance-policy=TERMINATE \
                 --image-family='{Config.INSTANCE_DEFAULT_PARAMS['family']}' \
                 --image-project='{Config.INSTANCE_DEFAULT_PARAMS['project']}' \
+                --scopes https://www.googleapis.com/auth/cloud-platform \
                 --metadata='{metadata_string}'"
     c.run(command)
-
 
 @task(
     help={
