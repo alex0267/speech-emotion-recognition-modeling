@@ -13,7 +13,7 @@ import model.model as module_arch
 from parse_config import ConfigParser
 from trainer import Trainer
 from utils import prepare_device
-from typing import Tuple, NamedTuple
+from typing import NamedTuple
 
 
 torch.multiprocessing.set_sharing_strategy("file_system")
@@ -94,7 +94,10 @@ def gcp_value_from_metadata(name: str) -> str:
     """
 
     import os
-    stream = os.popen(f"echo $(curl http://metadata.google.internal/computeMetadata/v1/instance/attributes/{name} -H 'Metadata-Flavor: Google')")
+
+    stream = os.popen(
+        f"echo $(curl http://metadata.google.internal/computeMetadata/v1/instance/attributes/{name} -H 'Metadata-Flavor: Google')"
+    )
     output = stream.read().strip()
     return output
 

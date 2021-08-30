@@ -16,7 +16,7 @@ class BaseDataLoader(DataLoader):
         validation_split,
         num_workers,
         collate_fn=default_collate,
-        shuffle=False
+        shuffle=False,
     ):
         self.validation_split = validation_split
         self.shuffle = shuffle

@@ -4,6 +4,7 @@ from pathlib import Path
 import googleapiclient.discovery
 from invoke import task
 
+
 class Config:
     DEFAULT_GCP_ZONE = "europe-west4-a"
     DEFAULT_PROJECT_NAME = "wewyse-centralesupelec-ftv"
@@ -23,10 +24,10 @@ class Config:
     }
 )
 def publish_image(
-        c,
-        project_name=Config.DEFAULT_PROJECT_NAME,
-        local_image_name="speech-emotion-modelling",
-        remote_image_name=Config.DEFAULT_REMOTE_IMAGE_NAME,
+    c,
+    project_name=Config.DEFAULT_PROJECT_NAME,
+    local_image_name="speech-emotion-modelling",
+    remote_image_name=Config.DEFAULT_REMOTE_IMAGE_NAME,
 ):
     """
     Publish image to google container registry.
@@ -64,10 +65,10 @@ def publish_image(
     }
 )
 def destroy_image(
-        c,
-        hostname="eu.gcr.io",
-        project_id=Config.DEFAULT_PROJECT_NAME,
-        remote_image_name=None,
+    c,
+    hostname="eu.gcr.io",
+    project_id=Config.DEFAULT_PROJECT_NAME,
+    remote_image_name=None,
 ):
     """
     destroy named image in google registry.
@@ -88,7 +89,7 @@ def destroy_image(
 
 @task(help={"project_id": "project name or id", "zone": "instance zone"})
 def list_instances(
-        c, project_id=Config.DEFAULT_PROJECT_NAME, zone=Config.DEFAULT_GCP_ZONE
+    c, project_id=Config.DEFAULT_PROJECT_NAME, zone=Config.DEFAULT_GCP_ZONE
 ):
     """
     list instances related to a given project
@@ -100,14 +101,14 @@ def list_instances(
 
 @task
 def create_instance(
-        c,
-        name=None,
-        remote_image_name=None,
-        project_id=Config.DEFAULT_PROJECT_NAME,
-        zone=Config.DEFAULT_GCP_ZONE,
-        using_gpu=False,
-        image_project=None,
-        image_family=None
+    c,
+    name=None,
+    remote_image_name=None,
+    project_id=Config.DEFAULT_PROJECT_NAME,
+    zone=Config.DEFAULT_GCP_ZONE,
+    using_gpu=False,
+    image_project=None,
+    image_family=None,
 ):
     """
     create an instance on GCP
@@ -135,7 +136,6 @@ def create_instance(
     if not name:
         c.run("echo 'name parameter is mandatory'")
         return
-
 
     metadata_string = f"project_id={project_id},zone={zone},name={name}"
     if using_gpu:
@@ -178,6 +178,7 @@ def create_instance(
                 --metadata='{metadata_string}'"
     c.run(command)
 
+
 @task(
     help={
         "name": "instance name",
@@ -186,7 +187,7 @@ def create_instance(
     }
 )
 def delete_instance(
-        c, name, project_id=Config.DEFAULT_PROJECT_NAME, zone=Config.DEFAULT_GCP_ZONE
+    c, name, project_id=Config.DEFAULT_PROJECT_NAME, zone=Config.DEFAULT_GCP_ZONE
 ):
     """
     delete named instance on GCP
@@ -194,6 +195,6 @@ def delete_instance(
     compute = googleapiclient.discovery.build("compute", "v1")
     return (
         compute.instances()
-            .delete(project=project_id, zone=zone, instance=name)
-            .execute()
+        .delete(project=project_id, zone=zone, instance=name)
+        .execute()
     )

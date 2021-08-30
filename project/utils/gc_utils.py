@@ -1,14 +1,16 @@
 from google.cloud import storage
-from config import config, CONFIG_ENV
+from .config import config, CONFIG_ENV
 from google.api_core.exceptions import BadRequest
 
-#get client
+# get client
 def get_gcs_client():
     return storage.Client.from_service_account_json(
         config[CONFIG_ENV].GOOGLE_APPLICATION_CREDENTIALS_PATH
     )
 
-#Checking if a bucket exists and if you have access to it
+
+# Checking if a bucket exists and if you have access to it
+
 
 def check_access(bucket_name):
     try:
@@ -22,7 +24,7 @@ def check_access(bucket_name):
         print("It exists and we have access to it.")
 
 
-#file exist
+# file exist
 def key_existing(client, bucket_name, key):
     """return a tuple of (
         key's size if it exists or 0,
@@ -37,7 +39,6 @@ def key_existing(client, bucket_name, key):
     return 0, None
 
 
-
 def upload_blob(bucket_name, source_file_name, destination_blob_name):
     """Uploads a file to the bucket."""
     # bucket_name = "your-bucket-name"
@@ -50,11 +51,8 @@ def upload_blob(bucket_name, source_file_name, destination_blob_name):
 
     blob.upload_from_filename(source_file_name)
 
-    print(
-        "File {} uploaded to {}.".format(
-            source_file_name, destination_blob_name
-        )
-    )
+    print("File {} uploaded to {}.".format(source_file_name, destination_blob_name))
+
 
 def download_blob(bucket_name, source_blob_name, destination_file_name):
     """Downloads a blob from the bucket."""
@@ -73,8 +71,4 @@ def download_blob(bucket_name, source_blob_name, destination_file_name):
     blob = bucket.blob(source_blob_name)
     blob.download_to_filename(destination_file_name)
 
-    print(
-        "Blob {} downloaded to {}.".format(
-            source_blob_name, destination_file_name
-        )
-    )
+    print("Blob {} downloaded to {}.".format(source_blob_name, destination_file_name))

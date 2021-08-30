@@ -1,7 +1,6 @@
 import os
-from pathlib import Path
 
-CONFIG_ENV = os.getenv("CONFIG","dev")
+CONFIG_ENV = os.getenv("CONFIG", "dev")
 
 
 class Config:
@@ -13,7 +12,6 @@ class Config:
     POSTGRES_HOST = os.getenv("POSTGRES_HOST", "db")
     POSTGRES_PORT = os.getenv("POSTGRES_PORT", "5432")
     PROJECT_ID = "wewyse-centralesupelec-ftv"
-
 
     @classmethod
     def db_url_string(cls):
@@ -32,5 +30,6 @@ class TestConfig(Config):
 
 class ProdConfig(Config):
     CONFIG_ENV = "prod"
+
 
 config = dict(dev=DevConfig, test=TestConfig, prod=ProdConfig)

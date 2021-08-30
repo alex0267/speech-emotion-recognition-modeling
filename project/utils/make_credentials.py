@@ -1,6 +1,8 @@
 import os
 
-PRIVATE_KEY = os.environ.get("CREDENTIALS_PRIVATE_KEY")[:-1]  # removing trailing line break that breaks generated json file
+PRIVATE_KEY = os.environ.get("CREDENTIALS_PRIVATE_KEY")[
+    :-1
+]  # removing trailing line break that breaks generated json file
 PRIVATE_KEY_ID = os.environ.get("CREDENTIALS_PRIVATE_KEY_ID")
 CLIENT_ID = os.environ.get("CREDENTIALS_CLIENT_ID")
 

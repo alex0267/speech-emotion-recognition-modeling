@@ -28,15 +28,23 @@ class DnnModel(BaseModel):
     def __init__(self, seed, num_classes, dropout=0.25):
         super(DnnModel, self).__init__()
         self.seed = torch.manual_seed(seed)
-        self.conv1 = nn.Conv2d(in_channels=1, out_channels=16, kernel_size=(3, 3), stride=(1, 1))
+        self.conv1 = nn.Conv2d(
+            in_channels=1, out_channels=16, kernel_size=(3, 3), stride=(1, 1)
+        )
         self.conv1_drop = nn.Dropout2d(p=dropout)
-        self.conv2 = nn.Conv2d(in_channels=16, out_channels=32, kernel_size=(3, 3), stride=(1, 1))
+        self.conv2 = nn.Conv2d(
+            in_channels=16, out_channels=32, kernel_size=(3, 3), stride=(1, 1)
+        )
         self.conv2_drop = nn.Dropout2d(p=dropout)
-        self.conv3 = nn.Conv2d(in_channels=32, out_channels=64, kernel_size=(3, 3), stride=(1, 1))
+        self.conv3 = nn.Conv2d(
+            in_channels=32, out_channels=64, kernel_size=(3, 3), stride=(1, 1)
+        )
         self.conv3_drop = nn.Dropout2d(p=dropout)
-        self.conv4 = nn.Conv2d(in_channels=64, out_channels=64, kernel_size=(3, 3), stride=(1, 1))
+        self.conv4 = nn.Conv2d(
+            in_channels=64, out_channels=64, kernel_size=(3, 3), stride=(1, 1)
+        )
         self.conv4_drop = nn.Dropout2d(p=dropout)
-        self.fc1 = nn.Linear(64*4, num_classes)
+        self.fc1 = nn.Linear(64 * 4, num_classes)
 
     def forward(self, x):
         x = F.elu(F.max_pool2d(self.conv1(x), (2, 1)))
@@ -56,18 +64,26 @@ class DnnModelLr(BaseModel):
     def __init__(self, seed, num_classes, dropout=0.25):
         super(DnnModelLr, self).__init__()
         self.seed = torch.manual_seed(seed)
-        self.conv1 = nn.Conv2d(in_channels=1, out_channels=16, kernel_size=(3, 3), stride=(1, 1))
+        self.conv1 = nn.Conv2d(
+            in_channels=1, out_channels=16, kernel_size=(3, 3), stride=(1, 1)
+        )
         self.conv1_drop = nn.Dropout2d(p=dropout)
 
-        self.conv2 = nn.Conv2d(in_channels=16, out_channels=32, kernel_size=(3, 3), stride=(1, 1))
+        self.conv2 = nn.Conv2d(
+            in_channels=16, out_channels=32, kernel_size=(3, 3), stride=(1, 1)
+        )
         self.conv2_drop = nn.Dropout2d(p=dropout)
 
-        self.conv3 = nn.Conv2d(in_channels=32, out_channels=64, kernel_size=(3, 3), stride=(1, 1))
+        self.conv3 = nn.Conv2d(
+            in_channels=32, out_channels=64, kernel_size=(3, 3), stride=(1, 1)
+        )
         self.conv3_drop = nn.Dropout2d(p=dropout)
 
-        self.conv4 = nn.Conv2d(in_channels=64, out_channels=64, kernel_size=(3, 3), stride=(1, 1))
+        self.conv4 = nn.Conv2d(
+            in_channels=64, out_channels=64, kernel_size=(3, 3), stride=(1, 1)
+        )
         self.conv4_drop = nn.Dropout2d(p=dropout)
-        self.fc1 = nn.Linear(64*4, num_classes)
+        self.fc1 = nn.Linear(64 * 4, num_classes)
 
     def forward(self, x):
         x = LeakyReLU()(F.max_pool2d(self.conv1(x), (2, 1)))
