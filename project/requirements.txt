@@ -12,3 +12,5 @@ mlflow
 google-cloud-storage>=1.36.2
 dill>=0.3.3
 dvc>=2.1.0
+invoke>=1.6.0
+google-api-python-client>=2.14.0

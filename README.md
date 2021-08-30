@@ -55,9 +55,25 @@ Then, pulling the data is a simple `dvc pull`
     - Add data to mlflow
     - Add upsampling
     - launch with Adam optimizer and SGD with momentum            
+
+- add a tool to help for administrative tasks : 
+    - publish a docker image
+    - destroy a docker image✅
+    
+    - launch a gcp instance
+    - stop a gcp instance
+    - destroy a gcp instance
+    
+    - launch a training 
+    - launch an inference
+    
+    - launch mlflow server instance
+    - stop mlflow server
+    - destroy mlflow server instance  
+
   what's missing : 
     - Todo for use of local tensorboard
     - Document a simple way to launch on GCP
-    - Add loss function
+    - Add loss functions
     - More documentation 
     - BUG: when using more than one worker, there's a bug in the serialization process 
