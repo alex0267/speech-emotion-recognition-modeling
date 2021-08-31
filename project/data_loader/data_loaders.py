@@ -1,11 +1,11 @@
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Tuple, cast
+from typing import Any, Callable, Optional, Tuple
 
 import numpy as np
 import torch
 import torchaudio
 from base import BaseDataLoader
-from torch.utils.data import DataLoader, WeightedRandomSampler
+from torch.utils.data import WeightedRandomSampler
 from torch.utils.data.sampler import SubsetRandomSampler
 from torchvision import datasets, transforms
 from torchvision.datasets.folder import ImageFolder as SoundFolder
@@ -172,7 +172,8 @@ class MySoundFolder(SoundFolder):
         # channels (Optional[int]) – The number of channels
         # rate (Optional[float]) – Sampleing rate
         # precision (Optional[int]) – Bit depth
-        # length (Opti For sox backend, the number of samples. (frames * channels). For soundfile backend, the number of frames.
+        # length (Opti For sox backend, the number of samples. (frames * channels).
+        # For soundfile backend, the number of frames.
 
         if _case == 1:
             effects = [["pitch", "90"]]

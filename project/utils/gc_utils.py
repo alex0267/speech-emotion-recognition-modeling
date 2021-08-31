@@ -1,6 +1,8 @@
-from google.cloud import storage
-from .config import config, CONFIG_ENV
 from google.api_core.exceptions import BadRequest
+from google.cloud import storage
+
+from .config import config, CONFIG_ENV
+
 
 # get client
 def get_gcs_client():

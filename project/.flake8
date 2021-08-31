@@ -1,0 +1,9 @@
+[flake8]
+max-complexity = 10
+ignore =
+    # line break before binary operator
+    W503
+exclude =.git,__pycache__,build,dist,*.pyc,*.egg-info,.cache,.eggs,.flake8,config*,notebooks,data,mlruns,saved,venv
+max-line-length = 120
+import-order-style = pycharm
+format = %(path)s:%(row)d:(col)d: %(code)s %(text)s

@@ -14,3 +14,4 @@ dill>=0.3.3
 dvc>=2.1.0
 invoke>=1.6.0
 google-api-python-client>=2.14.0
+flake8>=3.9.2

@@ -96,7 +96,8 @@ def gcp_value_from_metadata(name: str) -> str:
     import os
 
     stream = os.popen(
-        f"echo $(curl http://metadata.google.internal/computeMetadata/v1/instance/attributes/{name} -H 'Metadata-Flavor: Google')"
+        f"echo $(curl http://metadata.google.internal/computeMetadata/v1/instance/attributes/{name} \
+         -H 'Metadata-Flavor: Google')"
     )
     output = stream.read().strip()
     return output

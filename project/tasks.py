@@ -43,7 +43,8 @@ def publish_image(
     c.run("echo 'done'")
 
     c.run(
-        f"echo 'passing command docker tag {local_image_name}:latest eu.gcr.io/{project_name}/{remote_image_name}:latest`'"
+        f"echo 'passing command docker tag {local_image_name}:latest \
+         eu.gcr.io/{project_name}/{remote_image_name}:latest`'"
     )
     c.run(
         f"docker tag {local_image_name}:latest eu.gcr.io/{project_name}/{remote_image_name}:latest"
@@ -78,8 +79,8 @@ def destroy_image(
         return
     # destroy a docker image  in GCP
     c.run(
-        f"echo 'passing command `gcloud container images delete "
-        f"eu.gcr.io/wewyse-centralesupelec-ftv/ser-modelling2:latest --force-delete-tags`'"
+        "echo 'passing command `gcloud container images delete "
+        "eu.gcr.io/wewyse-centralesupelec-ftv/ser-modelling2:latest --force-delete-tags`'"
     )
     c.run(
         f"gcloud container images delete {hostname}/{project_id}/{remote_image_name}:latest --force-delete-tags"
@@ -121,10 +122,12 @@ def create_instance(
     using a standard image provided by gcp
     invoke create-instance --name=test-instance --image-project=debian-cloud --image-family=debian-9
     ou
-    invoke create-instance --name=test-instance --image-project=deeplearning-platform-release --image-family=pytorch-latest-cpu
+    invoke create-instance --name=test-instance --image-project=deeplearning-platform-release
+    --image-family=pytorch-latest-cpu
 
     same command using gpu
-    invoke create-instance --name=test-instance --image-project=deeplearning-platform-release --image-family=pytorch-latest-gpu --using-gpu
+    invoke create-instance --name=test-instance --image-project=deeplearning-platform-release
+    --image-family=pytorch-latest-gpu --using-gpu
 
     create an instance on GCP
     using a standard image provided by gcp and using default values
@@ -139,8 +142,7 @@ def create_instance(
 
     metadata_string = f"project_id={project_id},zone={zone},name={name}"
     if using_gpu:
-        metadata_string += f",install-nvidia-driver=True"
-
+        metadata_string += ",install-nvidia-driver=True"
     if remote_image_name:
         # custom image type
         command = f"gcloud compute instances create-with-container {name}   \
