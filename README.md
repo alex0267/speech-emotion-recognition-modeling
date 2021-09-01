@@ -5,7 +5,6 @@ A tool to create models to detect emotions in audio contents.
 ### Install
 
 - Git clone the project
-
 - Have a working python 3.9, and install requirements in an activated virtual environment:
 
 If `pip install -r ./requirements.txt` complains about llvm:
@@ -30,39 +29,39 @@ Then, pulling the data is a simple `dvc pull`
 - tracking experiments ✅
 - versioning data with dvc ✅
    data are stored in the google cloud storage bucket "wewyse-centralesupelec-ftv-data"
-- choose a template for DS project
-- integrate [this](https://github.com/victoresque/pytorch-template) project template ✅   
+- choose a template for DS project ✅
+- integrate [this](https://github.com/victoresque/pytorch-template) project template ✅ 
 - configure dvc backend the first time ✅
 
-      - `dvc init`
-      - either use a `gcloud auth application-default login`
+      - `dvc init` ✅
+      - either use a `gcloud auth application-default login`✅
       or set an environment variable GOOGLE_APPLICATION_CREDENTIALS
       - then launch this command
-      `dvc remote add -d ftv-data gs://wewyse-centralesupelec-ftv-data/raw_data`
+      `dvc remote add -d ftv-data gs://wewyse-centralesupelec-ftv-data/raw_data` ✅
       import-url will download data from a distant storage and create dvc file and .gitignore file
-       `dvc update ./raw_data.dvc` will bring data 
+       `dvc update ./raw_data.dvc` will bring data ✅
       reference :
          https://dvc.org/doc/use-cases/sharing-data-and-model-files
          
 - build a mvp for the projet ✅
   -  reformat data pre treatment
-    - add pitch modulation using pyaudio 
-    - add creation of overlapping windows 
+    - add pitch modulation using pyaudio ✅
+    - add creation of overlapping windows ✅
   -  add them in a data loader
-    -  add the correct model
-    -  test a minimal config
-    - Normalise tensor at the entrance
-    - Add data to mlflow
-    - Add upsampling
-    - launch with Adam optimizer and SGD with momentum            
+    -  add the correct model ✅
+    -  test a minimal config ✅
+    - Normalise tensor at the entrance ✅
+    - Add data to mlflow ✅
+    - Add upsampling ✅
+    - launch with Adam optimizer and SGD with momentum ✅            
 
 - add a tool to help for administrative tasks : 
-    - publish a docker image
-    - destroy a docker image✅
+    - publish a docker image ✅
+    - destroy a docker image ✅
     
-    - launch a gcp instance
-    - stop a gcp instance
-    - destroy a gcp instance
+    - launch a gcp instance ✅
+    - stop a gcp instance ✅
+    - destroy a gcp instance✅
     
     - launch a training 
     - launch an inference
