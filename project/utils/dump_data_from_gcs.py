@@ -4,14 +4,14 @@ from datetime import datetime
 from pathlib import Path
 
 import filetype
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, create_engine
+from config import DevConfig
+from gc_utils import download_blob
+from sqlalchemy import (Column, DateTime, ForeignKey, Integer, String,
+                        create_engine)
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.inspection import inspect
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql import func
-
-from config import DevConfig
-from gc_utils import download_blob
 
 EMOTION_MAP = {
     "Joie": "joy",

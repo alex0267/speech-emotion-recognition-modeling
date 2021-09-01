@@ -4,12 +4,12 @@ from typing import Any, Callable, Optional, Tuple
 import numpy as np
 import torch
 import torchaudio
-from base import BaseDataLoader
 from torch.utils.data import WeightedRandomSampler
 from torch.utils.data.sampler import SubsetRandomSampler
 from torchvision import datasets, transforms
 from torchvision.datasets.folder import ImageFolder as SoundFolder
 
+from base import BaseDataLoader
 from data_loader.transforms import pipelines
 
 torchaudio.set_audio_backend("sox_io")

@@ -5,8 +5,9 @@ import dill
 import mlflow
 import numpy as np
 import torch
-from base import BaseTrainer
 from torchvision.utils import make_grid
+
+from base import BaseTrainer
 from utils import MetricTracker, inf_loop
 
 
@@ -51,7 +52,7 @@ class Trainer(BaseTrainer):
             "loss", *[m.__name__ for m in self.metric_ftns], writer=self.writer
         )
 
-    def _train_epoch(self, epoch): # noqa:
+    def _train_epoch(self, epoch):  # noqa:
         """
         Training logic for an epoch
 

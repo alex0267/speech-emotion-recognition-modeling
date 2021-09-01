@@ -1,8 +1,9 @@
+import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from base import BaseModel
-import torch
 from torch.nn import LeakyReLU
+
+from base import BaseModel
 
 
 class MnistModel(BaseModel):

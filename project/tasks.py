@@ -200,3 +200,57 @@ def delete_instance(
         .delete(project=project_id, zone=zone, instance=name)
         .execute()
     )
+
+
+# Code maintenance
+# black
+# black ./project
+# isort
+# isort ./project
+# flake8
+# flake8 ./project
+
+
+@task(
+    help={
+        "dir": "directory to apply black to",
+    }
+)
+def black(
+    c,
+    dir=".",
+):
+    """
+    apply black to given directory.
+    """
+    c.run(f"black {dir}")
+
+
+@task(
+    help={
+        "dir": "directory to apply isort",
+    }
+)
+def isort(
+    c,
+    dir=".",
+):
+    """
+    apply isort to given directory.
+    """
+    c.run(f"isort {dir}")
+
+
+@task(
+    help={
+        "dir": "directory to apply isort",
+    }
+)
+def flake8(
+    c,
+    dir=".",
+):
+    """
+    apply flake8 to given directory.
+    """
+    c.run(f"flake8 {dir}")

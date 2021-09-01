@@ -1,7 +1,7 @@
 from google.api_core.exceptions import BadRequest
 from google.cloud import storage
 
-from .config import config, CONFIG_ENV
+from .config import CONFIG_ENV, config
 
 
 # get client

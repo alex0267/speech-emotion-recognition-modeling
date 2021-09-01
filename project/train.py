@@ -1,5 +1,6 @@
 import argparse
 import collections
+from typing import NamedTuple
 
 import mlflow
 import numpy as np
@@ -13,8 +14,6 @@ import model.model as module_arch
 from parse_config import ConfigParser
 from trainer import Trainer
 from utils import prepare_device
-from typing import NamedTuple
-
 
 torch.multiprocessing.set_sharing_strategy("file_system")
 
@@ -108,10 +107,11 @@ def stop_gcp_instance() -> None:
     stop current gcp instance using metadata
     :return:
     """
+    import logging
+
     from googleapiclient import discovery
     from googleapiclient.discovery import Resource
     from oauth2client.client import GoogleCredentials
-    import logging
 
     credentials = GoogleCredentials.get_application_default()
     service: Resource = discovery.build("compute", "v1", credentials=credentials)
