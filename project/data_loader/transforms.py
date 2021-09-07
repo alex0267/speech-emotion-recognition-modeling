@@ -1,3 +1,5 @@
+import logging
+
 import numpy as np
 import torch
 from sklearn.feature_extraction.image import extract_patches_2d
@@ -7,6 +9,10 @@ from torchvision.transforms import Compose, Lambda
 
 
 class ToMelSpectogram(torch.nn.Module):
+    """
+    class to convert a sound file represented as a tuple of waveform and a sample rate a to a mel spectrogram
+    """
+
     def __init__(self, n_mels: int):
         super().__init__()
         self.n_mels = n_mels
@@ -18,6 +24,10 @@ class ToMelSpectogram(torch.nn.Module):
 
 
 class SplitIntoPatches(torch.nn.Module):
+    """
+    split an image represented by a tensor
+    """
+
     def __init__(self, length: float):
         super().__init__()
         self.length = length
@@ -25,13 +35,12 @@ class SplitIntoPatches(torch.nn.Module):
     def forward(self, sample: tuple):
         """
         :param sample:
-        :param length:
         :return:
         """
         spectrogram = sample  # channel*#n_mels*dim
         patch_list = np.array_split(
             spectrogram[
-                :, :, 0: (spectrogram.shape[2] - (spectrogram.shape[2] % self.length))
+            :, :, 0: (spectrogram.shape[2] - (spectrogram.shape[2] % self.length))
             ],
             spectrogram.shape[2] // self.length,
             axis=2,
@@ -40,6 +49,10 @@ class SplitIntoPatches(torch.nn.Module):
 
 
 class OverlappingPatches(torch.nn.Module):
+    """
+    split an image represented by a tensor (overlapping images)
+    """
+
     def __init__(self, length: float, n_mels: int):
         super().__init__()
         self.length = length
@@ -48,8 +61,6 @@ class OverlappingPatches(torch.nn.Module):
     def forward(self, sample: tuple):
         """
         :param sample:
-        :param length:
-        :param n_mels:
         :return:
         """
         spectrogram = sample
@@ -84,5 +95,5 @@ def pipelines(name, length: float, n_mels: int):
                 ]
             )
     except ValueError:
-        print("This pipeline is not defined")
+        logging.info("This pipeline is not defined")
         raise
