@@ -91,6 +91,10 @@ class DnnDataLoader(BaseDataLoader):
         )
 
     def _get_class_weights(self):
+        """
+        compute a dict with weights for each class
+        :return:
+        """
         unique, counts = np.unique(
             [class_index for _, class_index in self.dataset], return_counts=True
         )
@@ -100,6 +104,13 @@ class DnnDataLoader(BaseDataLoader):
         return {k: total_count / v for k, v in emotion_count.items()}
 
     def _split_sampler(self, split):
+        """
+        split a sample reweighting classes using WeightedRandomSampler
+        returning a training set and a validation set
+        :param split: either an int giving the number of sample in the validation set or
+        a float, giving the ratio of the validation set
+        :return:
+        """
         if split == 0.0:
             return None, None
 
@@ -133,6 +144,9 @@ class DnnDataLoader(BaseDataLoader):
 
 
 class MySoundFolder(SoundFolder):
+    """
+    class interfacing with audio files and doing on the fly data augmentation adding a 90 db and substracting 90 db
+    """
     def __init__(
         self,
         root: str,
@@ -170,7 +184,7 @@ class MySoundFolder(SoundFolder):
         metadata = torchaudio.info(path)
         sample_rate = metadata.sample_rate
         # channels (Optional[int]) – The number of channels
-        # rate (Optional[float]) – Sampleing rate
+        # rate (Optional[float]) – Sampling rate
         # precision (Optional[int]) – Bit depth
         # length (Opti For sox backend, the number of samples. (frames * channels).
         # For soundfile backend, the number of frames.
