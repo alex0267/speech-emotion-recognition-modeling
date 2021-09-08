@@ -2,10 +2,30 @@ import logging
 
 import numpy as np
 import torch
+import torchaudio.transforms
 from sklearn.feature_extraction.image import extract_patches_2d
 from torchaudio.transforms import MelSpectrogram
 from torchvision import transforms
 from torchvision.transforms import Compose, Lambda
+
+
+class TrimSilent(torch.nn.Module):
+    def __init__(self):
+        super().__init__()
+
+    def forward(self, sample: tuple):
+        """
+        Vad trims only from front, signal needs to be flipped.
+        """
+        waveform = sample[0]
+        sample_rate = sample[1]
+        # Trim the "end" of the track
+        waveform = torchaudio.transforms.Vad(sample_rate)(torch.flip(waveform, [1, 0]))
+        # Trim the start of the track
+        return (
+            torchaudio.transforms.Vad(sample_rate)(torch.flip(waveform, [1, 0])),
+            sample_rate,
+        )
 
 
 class ToMelSpectogram(torch.nn.Module):
@@ -80,6 +100,7 @@ def pipelines(name, length: float, n_mels: int):
         if name == "split":
             return Compose(
                 [
+                    TrimSilent(),
                     ToMelSpectogram(n_mels),
                     transforms.Normalize((4.5897555,), (16.177462,)),
                     SplitIntoPatches(length),
@@ -89,6 +110,7 @@ def pipelines(name, length: float, n_mels: int):
         if name == "overlapping":
             return Compose(
                 [
+                    TrimSilent(),
                     ToMelSpectogram(n_mels),
                     OverlappingPatches(length),
                     Lambda(stack_patches),
