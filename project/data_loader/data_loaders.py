@@ -167,22 +167,24 @@ class MySoundFolder(SoundFolder):
     def __len__(self) -> int:
         return 3 * len(self.samples)
 
-    def __getitem__(self, index: int) -> Tuple[Any, Any]:
+    def __getitem__(self, index: int) -> Tuple[Any, Any,str, int]:
         """
         Args:
             index (int): Index
 
         Returns:
-            tuple: (sample, target) where target is class_index of the target class.
+            tuple: (sample, target, source path, case) where target is class_index of the target class.
         """
         from torchaudio.sox_effects import apply_effects_tensor
 
         _index = index // 3
         _case = divmod(index, 3)[1]
         path, target = self.samples[_index]
+        print(f" path= {path}")
         sample = self.loader(path)
         metadata = torchaudio.info(path)
         sample_rate = metadata.sample_rate
+        print(f" sample_rate= {sample_rate}")
         # channels (Optional[int]) – The number of channels
         # rate (Optional[float]) – Sampling rate
         # precision (Optional[int]) – Bit depth
@@ -203,4 +205,4 @@ class MySoundFolder(SoundFolder):
             sample = self.transform(sample)
         if self.target_transform is not None:
             target = self.target_transform(target)
-        return sample, target  # sample (tensor, sample rate), target
+        return sample, target, path, _case  # sample (tensor, sample rate), target, source path, augmentation case

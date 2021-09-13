@@ -116,6 +116,14 @@ def pipelines(name, length: float, n_mels: int):
                     Lambda(stack_patches),
                 ]
             )
+        if name == "overlapping_from_image":
+            return Compose(
+                [
+                    OverlappingPatches(length),
+                    Lambda(stack_patches),
+                ]
+            )
+
     except ValueError:
         logging.info("This pipeline is not defined")
         raise

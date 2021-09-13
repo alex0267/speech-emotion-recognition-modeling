@@ -24,10 +24,10 @@ class Config:
     }
 )
 def publish_image(
-    c,
-    project_name=Config.DEFAULT_PROJECT_NAME,
-    local_image_name="speech-emotion-modelling",
-    remote_image_name=Config.DEFAULT_REMOTE_IMAGE_NAME,
+        c,
+        project_name=Config.DEFAULT_PROJECT_NAME,
+        local_image_name="speech-emotion-modelling",
+        remote_image_name=Config.DEFAULT_REMOTE_IMAGE_NAME,
 ):
     """
     Publish image to google container registry.
@@ -66,10 +66,10 @@ def publish_image(
     }
 )
 def destroy_image(
-    c,
-    hostname="eu.gcr.io",
-    project_id=Config.DEFAULT_PROJECT_NAME,
-    remote_image_name=None,
+        c,
+        hostname="eu.gcr.io",
+        project_id=Config.DEFAULT_PROJECT_NAME,
+        remote_image_name=None,
 ):
     """
     destroy named image in google registry.
@@ -90,7 +90,7 @@ def destroy_image(
 
 @task(help={"project_id": "project name or id", "zone": "instance zone"})
 def list_instances(
-    c, project_id=Config.DEFAULT_PROJECT_NAME, zone=Config.DEFAULT_GCP_ZONE
+        c, project_id=Config.DEFAULT_PROJECT_NAME, zone=Config.DEFAULT_GCP_ZONE
 ):
     """
     list instances related to a given project
@@ -102,14 +102,14 @@ def list_instances(
 
 @task
 def create_instance(
-    c,
-    name=None,
-    remote_image_name=None,
-    project_id=Config.DEFAULT_PROJECT_NAME,
-    zone=Config.DEFAULT_GCP_ZONE,
-    using_gpu=False,
-    image_project=None,
-    image_family=None,
+        c,
+        name=None,
+        remote_image_name=None,
+        project_id=Config.DEFAULT_PROJECT_NAME,
+        zone=Config.DEFAULT_GCP_ZONE,
+        using_gpu=False,
+        image_project=None,
+        image_family=None,
 ):
     """
     create an instance on GCP
@@ -189,7 +189,7 @@ def create_instance(
     }
 )
 def delete_instance(
-    c, name, project_id=Config.DEFAULT_PROJECT_NAME, zone=Config.DEFAULT_GCP_ZONE
+        c, name, project_id=Config.DEFAULT_PROJECT_NAME, zone=Config.DEFAULT_GCP_ZONE
 ):
     """
     delete named instance on GCP
@@ -197,8 +197,8 @@ def delete_instance(
     compute = googleapiclient.discovery.build("compute", "v1")
     return (
         compute.instances()
-        .delete(project=project_id, zone=zone, instance=name)
-        .execute()
+            .delete(project=project_id, zone=zone, instance=name)
+            .execute()
     )
 
 
@@ -213,44 +213,62 @@ def delete_instance(
 
 @task(
     help={
-        "dir": "directory to apply black to",
+        "dirpath": "directory to apply black to",
     }
 )
 def black(
-    c,
-    dir=".",
+        c,
+        dirpath=".",
 ):
     """
     apply black to given directory.
     """
-    c.run(f"black {dir}")
+    c.run(f"black {dirpath}")
 
 
 @task(
     help={
-        "dir": "directory to apply isort",
+        "dirpath": "directory to apply isort",
     }
 )
 def isort(
-    c,
-    dir=".",
+        c,
+        dirpath=".",
 ):
     """
     apply isort to given directory.
     """
-    c.run(f"isort {dir}")
+    c.run(f"isort {dirpath}")
 
 
 @task(
     help={
-        "dir": "directory to apply isort",
+        "dirpath": "directory to apply isort",
     }
 )
 def flake8(
-    c,
-    dir=".",
+        c,
+        dirpath=".",
 ):
     """
     apply flake8 to given directory.
     """
-    c.run(f"flake8 {dir}")
+    c.run(f"flake8 {dirpath}")
+
+
+@task(
+    help={
+        "inpath": "directory containing sounds files",
+        "outpath": "directory containing pictures files"
+    }
+)
+def sound_to_pics(
+        c,
+        inpath=None,
+        outpath=None
+):
+    """
+
+    """
+    from data_loader.utils import transformations
+    transformations(inpath=inpath, outpath=outpath)
