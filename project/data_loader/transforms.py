@@ -28,6 +28,7 @@ class TrimSilent(torch.nn.Module):
         )
 
 
+
 class ToMelSpectogram(torch.nn.Module):
     """
     class to convert a sound file represented as a tuple of waveform and a sample rate a to a mel spectrogram
@@ -87,7 +88,14 @@ class OverlappingPatches(torch.nn.Module):
         num_channels = spectrogram.shape[0]
         if num_channels == 1:
             spectrogram = spectrogram[0]
-        patch_list = extract_patches_2d(spectrogram, (self.n_mels, self.length))
+        print(f"num_channels : {num_channels}")
+
+        print(f"shape : {spectrogram.shape}")
+        print(f"height : {self.length}")
+        print(f"width : {self.n_mels}")
+
+
+        patch_list = extract_patches_2d(spectrogram, (self.length,self.n_mels)) #image, (patch_height, patch_width)
         return patch_list
 
 
@@ -112,14 +120,14 @@ def pipelines(name, length: float, n_mels: int):
                 [
                     TrimSilent(),
                     ToMelSpectogram(n_mels),
-                    OverlappingPatches(length),
+                    OverlappingPatches(length,n_mels),
                     Lambda(stack_patches),
                 ]
             )
         if name == "overlapping_from_image":
             return Compose(
-                [
-                    OverlappingPatches(length),
+                [   transforms.ToTensor(),
+                    OverlappingPatches(length,n_mels),
                     Lambda(stack_patches),
                 ]
             )

@@ -62,6 +62,89 @@ def collate_fn(batch):
     return torch.stack(data_list).float(), torch.IntTensor(label_list)
 
 
+
+
+class CustomDnnDataLoader(BaseDataLoader):
+    """
+    Dnn data loading using BaseDataLoader
+
+    """
+
+    def __init__(
+            self,
+            data_dir,
+            batch_size,
+            validation_split=0.3,
+            num_workers=1,
+    ):
+        from torchvision.datasets.folder import ImageFolder
+        self.data_dir = data_dir
+        self.dataset = ImageFolder(self.data_dir,
+            transform=pipelines("overlapping_from_image", length=52, n_mels=56),
+        )
+
+        super().__init__(
+            self.dataset,
+            batch_size,
+            validation_split,
+            num_workers,
+            collate_fn=collate_fn,
+        )
+
+    def _get_class_weights(self):
+        """
+        compute a dict with weights for each class
+        :return:
+        """
+        unique, counts = np.unique(
+            [class_index for _, class_index in self.dataset], return_counts=True
+        )
+        emotion_count = dict(zip(unique, counts))
+        total_count = sum(counts)
+
+        return {k: total_count / v for k, v in emotion_count.items()}
+
+    def _split_sampler(self, split):
+        """
+        split a sample reweighting classes using WeightedRandomSampler
+        returning a training set and a validation set
+        :param split: either an int giving the number of sample in the validation set or
+        a float, giving the ratio of the validation set
+        :return:
+        """
+        if split == 0.0:
+            return None, None
+
+        idx_full = np.arange(self.n_samples)
+
+        np.random.seed(0)
+        np.random.shuffle(idx_full)
+
+        if isinstance(split, int):
+            assert split > 0
+            assert (
+                    split < self.n_samples
+            ), "validation set size is configured to be larger than entire dataset."
+            len_valid = split
+        else:
+            len_valid = int(self.n_samples * split)
+
+        valid_idx = idx_full[0:len_valid]
+        valid_sampler = SubsetRandomSampler(valid_idx)
+
+        train_idx = np.delete(idx_full, np.arange(0, len_valid))
+        emotion_dict = self._get_class_weights()
+        emotion_weights = [emotion_dict[self.dataset[i][1]] for i in train_idx]
+        train_sampler = WeightedRandomSampler(emotion_weights, len(train_idx))
+
+        # turn off shuffle option which is mutually exclusive with sampler
+        self.shuffle = False
+        self.n_samples = len(train_idx)
+
+        return train_sampler, valid_sampler
+
+
+
 class DnnDataLoader(BaseDataLoader):
     """
     Dnn data loading using BaseDataLoader
@@ -180,11 +263,9 @@ class MySoundFolder(SoundFolder):
         _index = index // 3
         _case = divmod(index, 3)[1]
         path, target = self.samples[_index]
-        print(f" path= {path}")
         sample = self.loader(path)
         metadata = torchaudio.info(path)
         sample_rate = metadata.sample_rate
-        print(f" sample_rate= {sample_rate}")
         # channels (Optional[int]) – The number of channels
         # rate (Optional[float]) – Sampling rate
         # precision (Optional[int]) – Bit depth

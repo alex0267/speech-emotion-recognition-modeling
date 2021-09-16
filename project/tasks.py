@@ -259,16 +259,22 @@ def flake8(
 @task(
     help={
         "inpath": "directory containing sounds files",
-        "outpath": "directory containing pictures files"
+        "outpath": "directory containing pictures files",
+        "debug" : "debug mode",
+        "limit" : "limit in image transformed"
     }
 )
 def sound_to_pics(
         c,
         inpath=None,
-        outpath=None
+        outpath=None,
+        debug=False,
+        limit=None
 ):
     """
 
     """
+    import warnings
+    warnings.filterwarnings('ignore')
     from data_loader.utils import transformations
-    transformations(inpath=inpath, outpath=outpath)
+    transformations(inpath=inpath, outpath=outpath,debug=debug,limit=limit)

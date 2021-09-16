@@ -2,12 +2,16 @@
     sound and images transformations files
 """
 
+import logging
 import struct
+import sys
 from typing import Iterable
 
 import numpy as np
 import webrtcvad
 from scipy.io import wavfile
+
+logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
 
 def file_2_vad_struct(filepath: str, aggressiveness: int = 3, window_duration: float = 0.03,
@@ -44,13 +48,16 @@ def file_2_vad_ts(filepath: str, time_space: bool = True) -> Iterable[dict]:
     :return:
     """
     import torch
+    from pathlib import Path
     if time_space:
         SAMPLE_RATE = 16000
     else:
         SAMPLE_RATE = 1
 
     torch.set_num_threads(1)
-    model, utils = torch.hub.load(repo_or_dir='snakers4/silero-vad', model='silero_vad')
+
+    model, utils = torch.hub.load(repo_or_dir=str(Path(Path(__file__).parent,"voice_activity_detection","snakers4_silero-vad_master")),
+                                  model='silero_vad',source="local")
     (get_speech_ts,
      _,
      _,
@@ -64,31 +71,71 @@ def file_2_vad_ts(filepath: str, time_space: bool = True) -> Iterable[dict]:
         {"start": mydict["start"] / SAMPLE_RATE, "end": mydict["end"] / SAMPLE_RATE}) or mydict, output))
 
 
-def transformations(inpath: str, outpath: str):
+def transformations(inpath: str, outpath: str, debug: bool = False, limit=None,min_size=53):
+    """
+
+    :param inpath:
+    :param outpath:
+    :param debug:
+    :param limit:
+    :param min_size: mininimum size in pixel
+    :return:
+    """
+    from pathlib import Path
     import torchaudio
-    from data_loader.data_loaders import MySoundFolder
-    from torchaudio.transforms import MelSpectrogram
+    import soundfile
+    import librosa
+    import torch
     from typing import Iterable
     from torchvision import transforms
-    from pathlib import Path
+    from torchaudio.transforms import MelSpectrogram
+
+    from data_loader.data_loaders import MySoundFolder
     torchaudio.set_audio_backend("sox_io")
+    if debug:
+        logging.info(f" exporting directory {inpath} ")
 
     items = MySoundFolder(root=inpath, loader=torchaudio.load)
 
-    for item in items:
-        sample, target, abs_path, case = item
-        sentiment: str = Path(abs_path).parent.name
-        file_name: str = Path(abs_path).stem
-        waveform, sample_rate = sample
-        # voice activity detection calculus
-        vads: Iterable[dict] = file_2_vad_ts(abs_path, time_space=False)
-        if len(vads):  # there's a voice
-            # trim at start and end
-            start = int(vads[0]["start"])
-            end = int(vads[-1]["end"])
-            waveform = waveform[:, start:end]
-            # create and store mfcc
-            image_tensor = MelSpectrogram(sample_rate=sample_rate, n_mels=52)(waveform)
-            im = transforms.ToPILImage()(image_tensor).convert("RGB")
-            Path(Path(outpath), sentiment).mkdir(parents=True, exist_ok=True)
-            im.save(Path(Path(outpath), sentiment, f"{case}_{file_name}.jpg"), "JPEG")
+    if limit:
+        items = list(items)[0:int(limit) + 1]
+    for item in items: #loop on items
+        try:
+            sample, target, abs_path, case = item #sample data, target, source filepath, case of data augmentation
+            sentiment: str = Path(abs_path).parent.name
+            file_name: str = Path(abs_path).stem
+            if debug:
+                logging.info(f" exporting file {abs_path} ")
+
+            waveform, sample_rate = sample
+            # voice activity detection calculus
+            vads: Iterable[dict] = file_2_vad_ts(abs_path, time_space=True)
+            if len(vads):  # there's a voice
+                # trim at start and end
+                start = int(vads[0]["start"])  # seconds
+                end = int(vads[-1]["end"])  # seconds
+                if debug:
+                    logging.info(f" start {start} seconds")
+                    logging.info(f" end {end} seconds")
+
+                waveform = waveform[:,
+                           librosa.time_to_samples(start, sr=sample_rate):librosa.time_to_samples(end, sr=sample_rate)]
+                # create and store mfcc
+                image_tensor = MelSpectrogram(sample_rate=sample_rate, n_mels=52)(waveform)
+                im = transforms.ToPILImage()(image_tensor)
+                Path(Path(outpath), sentiment).mkdir(parents=True, exist_ok=True)
+                stem = str(Path(Path(outpath), sentiment, f"{case}_{file_name}"))
+                width, height = im.size
+
+                im = im.resize((width,max([height,min_size])))
+                print(f"width {width}")
+                print(f"height {height}")
+                width, height = im.size
+                print(f"width {width}")
+                print(f"height {height}")
+                im.convert('L').save(f"{stem}.jpg", "JPEG")
+                if debug:
+                    logging.info(f" saving {stem}.wav ")
+                    soundfile.write(f"{stem}.wav", torch.transpose(waveform, 0, 1), sample_rate)
+        except RuntimeError as e:
+            logging.info(f"Error on {abs_path} : {str(e)}")
