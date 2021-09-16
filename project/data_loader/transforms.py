@@ -79,28 +79,22 @@ class OverlappingPatches(torch.nn.Module):
         self.length = length
         self.n_mels = n_mels or 56
 
-    def forward(self, sample: tuple):
+    def forward(self, sample):
         """
-        :param sample:
+        :param sample: tensor
         :return:
         """
         spectrogram = sample
         num_channels = spectrogram.shape[0]
         if num_channels == 1:
             spectrogram = spectrogram[0]
-        print(f"num_channels : {num_channels}")
-
-        print(f"shape : {spectrogram.shape}")
-        print(f"height : {self.length}")
-        print(f"width : {self.n_mels}")
-
 
         patch_list = extract_patches_2d(spectrogram, (self.length,self.n_mels)) #image, (patch_height, patch_width)
         return patch_list
 
 
 def stack_patches(patchs):
-    return torch.stack([patch for patch in patchs])
+    return torch.stack([torch.from_numpy(patch) for patch in patchs])
 
 
 def pipelines(name, length: float, n_mels: int):
@@ -126,11 +120,15 @@ def pipelines(name, length: float, n_mels: int):
             )
         if name == "overlapping_from_image":
             return Compose(
-                [   transforms.ToTensor(),
+
+                [
+                    transforms.ToTensor(),
+                    transforms.Grayscale(num_output_channels=1),
                     OverlappingPatches(length,n_mels),
                     Lambda(stack_patches),
                 ]
             )
+        #
 
     except ValueError:
         logging.info("This pipeline is not defined")

@@ -128,11 +128,7 @@ def transformations(inpath: str, outpath: str, debug: bool = False, limit=None,m
                 width, height = im.size
 
                 im = im.resize((width,max([height,min_size])))
-                print(f"width {width}")
-                print(f"height {height}")
-                width, height = im.size
-                print(f"width {width}")
-                print(f"height {height}")
+                #width, height = im.size
                 im.convert('L').save(f"{stem}.jpg", "JPEG")
                 if debug:
                     logging.info(f" saving {stem}.wav ")
