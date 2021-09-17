@@ -94,6 +94,11 @@ class OverlappingPatches(torch.nn.Module):
 
 
 def stack_patches(patchs):
+    """
+
+    :param patchs:
+    :return:
+    """
     return torch.stack([torch.from_numpy(patch) for patch in patchs])
 
 
