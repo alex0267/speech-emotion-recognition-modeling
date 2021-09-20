@@ -3,7 +3,7 @@ from pathlib import Path
 
 import googleapiclient.discovery
 from invoke import task
-
+from invoke import Collection
 
 class Config:
     DEFAULT_GCP_ZONE = "europe-west4-a"
@@ -202,15 +202,6 @@ def delete_instance(
     )
 
 
-# Code maintenance
-# black
-# black ./project
-# isort
-# isort ./project
-# flake8
-# flake8 ./project
-
-
 @task(
     help={
         "dirpath": "directory to apply black to",
@@ -272,9 +263,32 @@ def sound_to_pics(
         limit=None
 ):
     """
-
+    transform sounds files to melspectrogram from a given dir to another dir
     """
     import warnings
     warnings.filterwarnings('ignore')
     from data_loader.utils import transformations
     transformations(inpath=inpath, outpath=outpath,debug=debug,limit=limit)
+
+
+ns = Collection()
+images = Collection('images')
+images.add_task(publish_image, 'publish_image')
+images.add_task(destroy_image, 'destroy_image')
+ns.add_collection(images)
+
+instances = Collection('instances')
+instances.add_task(list_instances, 'list_instances')
+instances.add_task(create_instance, 'create_instance')
+instances.add_task(delete_instance, 'delete_instance')
+ns.add_collection(instances)
+
+maintenance = Collection('maintenance')
+maintenance.add_task(black,"black")
+maintenance.add_task(flake8,"flake8")
+maintenance.add_task(isort,"isort")
+ns.add_collection(maintenance)
+
+training = Collection('training')
+training.add_task(sound_to_pics,'sound_to_pics')
+ns.add_collection(training)
