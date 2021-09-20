@@ -99,8 +99,9 @@ def stack_patches(patchs):
     :param patchs:
     :return:
     """
-    return torch.stack([torch.from_numpy(patch) for patch in patchs])
-
+    output = torch.stack([torch.from_numpy(patch) for patch in patchs])
+    output = output.unsqueeze(1)
+    return output
 
 def pipelines(name, length: float, n_mels: int):
     try:
