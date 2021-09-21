@@ -6,7 +6,6 @@ import logging
 import struct
 import sys
 from typing import Iterable
-
 import numpy as np
 import webrtcvad
 from scipy.io import wavfile
@@ -81,7 +80,6 @@ def transformations(inpath: str, outpath: str, debug: bool = False, limit=None,m
     from typing import Iterable
     from torchvision import transforms
     from torchaudio.transforms import MelSpectrogram
-
     from data_loader.data_loaders import MySoundFolder
     torchaudio.set_audio_backend("sox_io")
     if debug:
