@@ -45,7 +45,8 @@ class DnnModel(BaseModel):
             in_channels=64, out_channels=64, kernel_size=(3, 3), stride=(1, 1)
         )
         self.conv4_drop = nn.Dropout2d(p=dropout)
-        self.fc1 = nn.Linear(64 * 4, num_classes)
+        #self.fc1 = nn.Linear(64 * 4, num_classes)
+        self.fc1 = nn.Linear(320, num_classes)
 
     def forward(self, x):
         x = F.elu(F.max_pool2d(self.conv1(x), (2, 1)))
