@@ -3,6 +3,7 @@ import argparse
 import dill
 import torch
 import torch.multiprocessing
+
 # patch for m1 platform
 if torch.backends.quantized.engine is None:
     torch.backends.quantized.engine = 'qnnpack'
@@ -80,29 +81,32 @@ def main(config):
     logger.info(log)
 
 
-if __name__ == "__main__":
-    args = argparse.ArgumentParser(description="PyTorch Template")
-    args.add_argument(
+def get_parser():
+    parser = argparse.ArgumentParser(description="PyTorch Template")
+    parser.add_argument(
         "-c",
         "--config",
         default=None,
         type=str,
         help="config file path (default: None)",
     )
-    args.add_argument(
+    parser.add_argument(
         "-r",
         "--resume",
         default=None,
         type=str,
         help="path to latest checkpoint (default: None)",
     )
-    args.add_argument(
+    parser.add_argument(
         "-d",
         "--device",
         default=None,
         type=str,
         help="indices of GPUs to enable (default: all)",
     )
+    return parser
 
-    config = ConfigParser.from_args(args)
+
+if __name__ == "__main__":
+    config = ConfigParser.from_args(get_parser())
     main(config)

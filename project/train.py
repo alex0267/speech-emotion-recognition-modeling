@@ -1,15 +1,18 @@
 import argparse
+import os
 import collections
 from typing import NamedTuple
+import logging
+
 
 import mlflow
 import numpy as np
 import torch
 import torch.multiprocessing
+
 # patch for m1 platform
 if torch.backends.quantized.engine is None:
     torch.backends.quantized.engine = 'qnnpack'
-
 
 import data_loader.data_loaders as module_data
 import model.loss as module_loss
@@ -96,8 +99,6 @@ def gcp_value_from_metadata(name: str) -> str:
     :return: a tuple with output and error
     """
 
-    import os
-
     stream = os.popen(
         f"echo $(curl http://metadata.google.internal/computeMetadata/v1/instance/attributes/{name} \
          -H 'Metadata-Flavor: Google')"
@@ -111,7 +112,6 @@ def stop_gcp_instance() -> None:
     stop current gcp instance using metadata
     :return:
     """
-    import logging
 
     from googleapiclient import discovery
     from googleapiclient.discovery import Resource
@@ -131,31 +131,29 @@ def stop_gcp_instance() -> None:
         response = request.execute()
         logging.info(f"stop results {response}")
 
-
-if __name__ == "__main__":
-    args = argparse.ArgumentParser(description="PyTorch Template")
-    args.add_argument(
+def get_parser():
+    parser = argparse.ArgumentParser(description="PyTorch Template")
+    parser.add_argument(
         "-c",
         "--config",
         default=None,
         type=str,
         help="config file path (default: None)",
     )
-    args.add_argument(
+    parser.add_argument(
         "-r",
         "--resume",
         default=None,
         type=str,
         help="path to latest checkpoint (default: None)",
     )
-    args.add_argument(
+    parser.add_argument(
         "-d",
         "--device",
         default=None,
         type=str,
         help="indices of GPUs to enable (default: all)",
     )
-
     # custom cli options to modify configuration from default values given in json file.
     CustomArgs: NamedTuple = collections.namedtuple("CustomArgs", "flags type target")
     options: list[CustomArgs] = [
@@ -164,6 +162,10 @@ if __name__ == "__main__":
             ["--bs", "--batch_size"], type=int, target="data_loader;args;batch_size"
         ),
     ]
-    config: ConfigParser = ConfigParser.from_args(args, options)
+    return parser, options
+
+if __name__ == "__main__":
+
+    config: ConfigParser = ConfigParser.from_args(*get_parser())
     main(config)
     stop_gcp_instance()
