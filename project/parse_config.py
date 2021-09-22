@@ -5,9 +5,10 @@ from datetime import datetime
 from functools import partial, reduce
 from operator import getitem
 from pathlib import Path
-
+from argparse import ArgumentParser
 from logger import listener_process, logging_buffer
 from utils import read_json, write_json
+from typing import Optional,List
 
 
 class ConfigParser:
@@ -59,14 +60,17 @@ class ConfigParser:
         self.log_levels = {0: logging.WARNING, 1: logging.INFO, 2: logging.DEBUG}
 
     @classmethod
-    def from_args(cls, args, options=""):
+    def from_args(cls, args : ArgumentParser, options="",default_argv :  Optional[List[str]] = None):
         """
         Initialize this class from some cli arguments. Used in train, test.
         """
         for opt in options:
             args.add_argument(*opt.flags, default=None, type=opt.type)
         if not isinstance(args, tuple):
-            args = args.parse_args()
+            if default_argv:
+                args = args.parse_args(default_argv)
+            else:
+                args = args.parse_args()
 
         if args.device is not None:
             os.environ["CUDA_VISIBLE_DEVICES"] = args.device

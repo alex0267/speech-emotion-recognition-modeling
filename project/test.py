@@ -108,5 +108,5 @@ def get_parser():
 
 
 if __name__ == "__main__":
-    config = ConfigParser.from_args(get_parser())
+    config = ConfigParser.from_args(*get_parser())
     main(config)
