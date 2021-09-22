@@ -3,6 +3,10 @@ import argparse
 import dill
 import torch
 import torch.multiprocessing
+# patch for m1 platform
+if torch.backends.quantized.engine is None:
+    torch.backends.quantized.engine = 'qnnpack'
+
 from tqdm import tqdm
 
 import data_loader.data_loaders as module_data

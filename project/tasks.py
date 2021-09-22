@@ -267,6 +267,10 @@ def sound_to_pics(
     """
     import warnings
     warnings.filterwarnings('ignore')
+    import torch
+    # patch for m1 platform
+    if torch.backends.quantized.engine is None:
+        torch.backends.quantized.engine = 'qnnpack'
     from data_loader.utils import transformations
     transformations(inpath=inpath, outpath=outpath,debug=debug,limit=limit)
 

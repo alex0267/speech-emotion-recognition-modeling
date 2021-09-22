@@ -6,6 +6,10 @@ import mlflow
 import numpy as np
 import torch
 import torch.multiprocessing
+# patch for m1 platform
+if torch.backends.quantized.engine is None:
+    torch.backends.quantized.engine = 'qnnpack'
+
 
 import data_loader.data_loaders as module_data
 import model.loss as module_loss
