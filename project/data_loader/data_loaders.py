@@ -1,7 +1,7 @@
 import numpy as np
 import torch
 import torchaudio
-from torch.utils.data import WeightedRandomSampler
+from torch.utils.data import WeightedRandomSampler, Subset
 from torch.utils.data.sampler import SubsetRandomSampler
 from torchvision import datasets, transforms
 
@@ -157,19 +157,6 @@ class CustomPatchDnnDataLoader(BaseDataLoader):
             num_workers
         )
 
-    def _get_class_weights(self):
-        """
-        compute a dict with weights for each class
-        :return:
-        """
-        unique, counts = np.unique(
-            [class_index for _, class_index in self.dataset], return_counts=True
-        )
-        emotion_count = dict(zip(unique, counts))
-        total_count = sum(counts)
-
-        return {k: total_count / v for k, v in emotion_count.items()}
-
     def _split_sampler(self, split):
         """
         split a sample reweighting classes using WeightedRandomSampler
@@ -181,11 +168,6 @@ class CustomPatchDnnDataLoader(BaseDataLoader):
         if split == 0.0:
             return None, None
 
-        idx_full = np.arange(self.n_samples)
-
-        np.random.seed(0)
-        np.random.shuffle(idx_full)
-
         if isinstance(split, int):
             assert split > 0
             assert (
@@ -195,19 +177,13 @@ class CustomPatchDnnDataLoader(BaseDataLoader):
         else:
             len_valid = int(self.n_samples * split)
 
-        # WE ALWAYS TAKE THE FIRSTS ELEMENTS FOR VALIDATION?
-        valid_idx = idx_full[0:len_valid]
-        valid_sampler = SubsetRandomSampler(valid_idx)
-
-        train_idx = np.delete(idx_full, np.arange(0, len_valid))
-        #emotion_dict = self._get_class_weights()
-        #emotion_weights = [emotion_dict[np.int(self.dataset[i][1])] for i in train_idx]
-        emotion_weights = [1 for i in train_idx]
-        train_sampler = WeightedRandomSampler(emotion_weights, len(train_idx))
-        #train_sampler = SubsetRandomSampler(len(train_idx))
+        np.random.seed(0) # If we leave it here, won't we always have the same split? and therefore no real 10 cross validation?!
+        idx_full = np.random.permutation(self.n_samples)
+        valid_sampler = idx_full[0:len_valid]
+        train_sampler = idx_full[len_valid:]
 
         # turn off shuffle option which is mutually exclusive with sampler
         self.shuffle = False
-        self.n_samples = len(train_idx)
+        self.n_samples = len(train_sampler)
 
         return train_sampler, valid_sampler
