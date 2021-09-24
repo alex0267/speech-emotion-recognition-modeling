@@ -14,6 +14,21 @@ SND_EXTENSIONS = ".wav"
 def is_sound_file(item: str) -> bool:
     return Path(item).suffix in SND_EXTENSIONS and (not item.endswith("gitignore"))
 
+
+def get_dataset(dataset_choice, data_dir):
+    if dataset_choice == 'original':
+        dataset = MySoundFolder(
+            data_dir,
+            loader=torchaudio.load,
+            transform=pipelines("split", length=52, n_mels=56),
+        )
+    elif dataset_choice == 'custom':
+        dataset = ImageFolder(data_dir,
+                                   transform=pipelines("overlapping_from_image", length=52, n_mels=56),
+                                   )
+    return dataset
+
+
 class MySoundFolder(ImageFolder):
     """
     class interfacing with audio files and doing on the fly data augmentation adding a 90 db and substracting 90 db
