@@ -80,7 +80,7 @@ class MySoundFolder(SoundFolder):
         return sample, target, path, _case  # sample (tensor, sample rate), target, source path, augmentation case
 
 
-class MyPatchFolder(SoundFolder):
+class PatchFolder(SoundFolder):
     """
     """
 
