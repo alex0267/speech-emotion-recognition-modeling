@@ -49,14 +49,14 @@ def file_2_vad_ts(filepath: str, time_space: bool = True) -> Iterable[dict]:
     """
     import torch
     from pathlib import Path
-    from data_loader.voice_activity_detection.snakers4_silero_vad_master.utils_vad import get_speech_ts,read_audio,init_jit_model
+    from preprocessing.voice_activity_detection.snakers4_silero_vad_master.utils_vad import get_speech_ts,read_audio,init_jit_model
     if time_space:
         SAMPLE_RATE = 16000
     else:
         SAMPLE_RATE = 1
 
     torch.set_num_threads(1)
-    model = init_jit_model(str(Path(Path(__file__).parent,"voice_activity_detection","snakers4_silero_vad_master","files","model.jit")) )
+    model = init_jit_model(str(Path(Path(__file__).parent, "../preprocessing/voice_activity_detection", "snakers4_silero_vad_master", "files", "model.jit")))
     wav = read_audio(filepath)
     output = get_speech_ts(wav, model, num_steps=4)
     return list(map(lambda mydict: mydict.update(
