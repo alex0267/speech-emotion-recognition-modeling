@@ -5,6 +5,27 @@ import numpy as np
 from PIL import Image
 import torch
 
+def plot_convolution_filters(model, conv_layer_name):
+    aux = [(name, param) for (name, param) in model.named_parameters()
+           if conv_layer_name in name and 'weight' in name]
+    weights = aux[0][1]
+
+    n_out_filters, n_in_filters, h, w = weights.shape
+    im_filters = np.zeros(((h+1)*n_out_filters, (w+1)*n_in_filters))
+    for in_idx in range(n_in_filters):
+        for out_idx in range(n_out_filters):
+            im_filters[out_idx*(h+1):out_idx*(h+1)+h,
+                        in_idx*(w+1):in_idx*(w+1)+w] = weights[out_idx, in_idx, :, :].detach()
+
+    im_filters = np.expand_dims(im_filters, 2)
+    # im_filters = np.concatenate(
+    #     [np.concatenate([model.conv_layer_name.weight[i, :, :, :].detach(), np.zeros((1, 5, 5))]) for i in range(6)], 0)
+
+    figure = plt.figure(figsize=(8, 8))
+    plt.title(conv_layer_name)
+    plt.imshow(im_filters)
+    return figure
+
 def plot_confusion_matrix(cm, class_names):
     """
     Returns a matplotlib figure containing the plotted confusion matrix.
@@ -13,8 +34,9 @@ def plot_confusion_matrix(cm, class_names):
     cm (array, shape = [n, n]): a confusion matrix of integer classes
     class_names (array, shape = [n]): String names of the integer classes
     """
+    cm_normalized = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
     figure = plt.figure(figsize=(8, 8))
-    plt.imshow(cm, interpolation='nearest', cmap=plt.cm.Blues)
+    plt.imshow(cm_normalized, interpolation='nearest', cmap=plt.cm.Blues)
     plt.title("Confusion matrix")
     plt.colorbar()
     tick_marks = np.arange(len(class_names))
@@ -22,7 +44,7 @@ def plot_confusion_matrix(cm, class_names):
     plt.yticks(tick_marks, class_names)
 
     # Compute the labels from the normalized confusion matrix.
-    labels = np.around(cm.astype('float') / cm.sum(axis=1)[:, np.newaxis], decimals=2)
+    labels = np.around(cm_normalized, decimals=2)
 
     # Use white text if squares are dark; otherwise black.
     threshold = cm.max() / 2.
