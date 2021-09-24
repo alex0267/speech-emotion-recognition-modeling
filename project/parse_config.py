@@ -63,6 +63,13 @@ class ConfigParser:
     def from_args(cls, args : ArgumentParser, options="",default_argv :  Optional[List[str]] = None):
         """
         Initialize this class from some cli arguments. Used in train, test.
+        :param args:  Argumentparser
+        :param options: additional options
+        :param default_argv: injection of custom sys.argv[1:]
+        :return:
+        """
+        """
+        
         """
         for opt in options:
             args.add_argument(*opt.flags, default=None, type=opt.type)
