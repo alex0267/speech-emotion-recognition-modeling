@@ -11,7 +11,7 @@ from sklearn import metrics
 from trainer.base_trainer import BaseTrainer
 from utils import MetricTracker, inf_loop
 
-from logger.tensorboard_related import plot_to_image, plot_confusion_matrix
+from logger.tensorboard_related import plot_to_image, plot_confusion_matrix, plot_convolution_filters
 
 class Trainer(BaseTrainer):
     """
@@ -30,6 +30,7 @@ class Trainer(BaseTrainer):
         valid_data_loader=None,
         lr_scheduler=None,
         len_epoch=None,
+        initial_weights_path=None
     ):
         super().__init__(model, criterion, metric_ftns, optimizer, config)
         self.config = config
@@ -53,6 +54,12 @@ class Trainer(BaseTrainer):
         self.valid_metrics = MetricTracker(
             "loss", *[m.__name__ for m in self.metric_ftns], writer=self.writer
         )
+
+        if initial_weights_path is not None:
+            pretrained_weights = torch.load(initial_weights_path)
+            self.model.load_state_dict(pretrained_weights)
+
+
 
     def _train_epoch(self, epoch):  # noqa:
         """
@@ -144,18 +151,25 @@ class Trainer(BaseTrainer):
                     if self.config["mlflow"]["experiment_name"]:
                         mlflow.log_metric(met.__name__, met(output, target))
 
-                pred = np.argmax(output,axis=1)
 
-                if batch_idx==0:
-                    confusion_matrix = metrics.confusion_matrix(pred, target, labels=[0,1,2,3,4,5])
-                else:
-                    confusion_matrix += metrics.confusion_matrix(pred, target, labels=[0,1,2,3,4,5])
+                if np.mod(epoch, 5) == 0:
+                    pred = np.argmax(output,axis=1)
+                    if batch_idx==0:
+                        confusion_matrix = metrics.confusion_matrix(pred, target, labels=[0,1,2,3,4,5])
+                    else:
+                        confusion_matrix += metrics.confusion_matrix(pred, target, labels=[0,1,2,3,4,5])
 
-            figure = plot_confusion_matrix(confusion_matrix, class_names=[0,1,2,3,4,5])
-            cm_image = plot_to_image(figure)
+            if np.mod(epoch, 5) == 0:
+                figure = plot_confusion_matrix(confusion_matrix, class_names=[0,1,2,3,4,5])
+                cm_image = plot_to_image(figure)
 
-            self.writer.add_image(
-                "confusion_matrix", cm_image)
+                self.writer.add_image(
+                    "confusion_matrix", cm_image)
+
+                #  Save filters visualization in tensorboard
+                for conv_layer_name in ['conv1','conv2','conv3', 'conv4']:
+                    filter_image = plot_to_image(plot_convolution_filters(self.model, conv_layer_name))
+                    self.writer.add_image(f"layer {conv_layer_name}", filter_image)
 
             # self.writer.add_image(
             #     "input", make_grid(data.cpu(), nrow=8, normalize=True)
