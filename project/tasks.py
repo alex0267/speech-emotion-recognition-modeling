@@ -267,7 +267,7 @@ def sound_to_pics(
     """
     import warnings
     warnings.filterwarnings('ignore')
-    from data_loader.utils import transformations
+    from preprocessing.utils import transformations
     transformations(inpath=inpath, outpath=outpath,debug=debug,limit=limit)
 
 

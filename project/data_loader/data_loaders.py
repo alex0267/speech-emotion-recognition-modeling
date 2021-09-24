@@ -6,7 +6,7 @@ from torch.utils.data.sampler import SubsetRandomSampler
 from torchvision import datasets, transforms
 
 from data_loader.base_data_loader import BaseDataLoader
-from data_loader.transforms import pipelines
+from preprocessing.transforms import pipelines
 
 torchaudio.set_audio_backend("sox_io")
 
@@ -148,7 +148,6 @@ class CustomPatchDnnDataLoader(BaseDataLoader):
             validation_split=0.3,
             num_workers=1,
     ):
-        from torchvision.datasets.folder import ImageFolder
         self.data_dir = data_dir
 
         self.dataset = PatchDatasetFromImageFolder(self.data_dir)

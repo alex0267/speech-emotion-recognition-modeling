@@ -7,7 +7,7 @@ from torch.utils.data import TensorDataset
 import torchaudio
 from torchvision.datasets.folder import ImageFolder
 
-from data_loader.transforms import pipelines
+from preprocessing.transforms import pipelines
 
 SND_EXTENSIONS = ".wav"
 
