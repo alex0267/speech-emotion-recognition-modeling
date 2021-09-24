@@ -134,6 +134,10 @@ def pipelines(name, length: float, n_mels: int):
                     Lambda(stack_patches),
                 ]
             )
+        if name == "min_overlapping":
+            return Compose([transforms.Grayscale(num_output_channels=1),transforms.ToTensor(),
+                         SplitIntoPatches(length)]
+                         )
         #
 
     except ValueError:

@@ -82,7 +82,7 @@ def transformations(inpath: str, outpath: str, debug: bool = False, limit=None,m
     from torchvision import transforms
     from torchaudio.transforms import MelSpectrogram
     torch.backends.quantized.engine = 'qnnpack'
-    from data_loader.data_loaders import MySoundFolder
+    from data_loader.custom_datasets import MySoundFolder
     torchaudio.set_audio_backend("sox_io")
     if debug:
         logging.info(f" exporting directory {inpath} ")
