@@ -28,7 +28,6 @@ class TrimSilent(torch.nn.Module):
         )
 
 
-
 class ToMelSpectogram(torch.nn.Module):
     """
     class to convert a sound file represented as a tuple of waveform and a sample rate a to a mel spectrogram
@@ -42,7 +41,6 @@ class ToMelSpectogram(torch.nn.Module):
         waveform = sample[0]
         sample_rate = sample[1]
         return MelSpectrogram(sample_rate=sample_rate, n_mels=self.n_mels)(waveform)
-
 
 class SplitIntoPatches(torch.nn.Module):
     """
@@ -89,7 +87,7 @@ class OverlappingPatches(torch.nn.Module):
         if num_channels == 1:
             spectrogram = spectrogram[0]
 
-        patch_list = extract_patches_2d(spectrogram, (self.length,self.n_mels)) #image, (patch_height, patch_width)
+        patch_list = extract_patches_2d(spectrogram, (self.length, self.n_mels))  # image, (patch_height, patch_width)
         return patch_list
 
 
@@ -102,6 +100,7 @@ def stack_patches(patchs):
     output = torch.stack([torch.from_numpy(patch) for patch in patchs])
     output = output.unsqueeze(1)
     return output
+
 
 def pipelines(name, length: float, n_mels: int):
     try:
@@ -120,7 +119,7 @@ def pipelines(name, length: float, n_mels: int):
                 [
                     TrimSilent(),
                     ToMelSpectogram(n_mels),
-                    OverlappingPatches(length,n_mels),
+                    OverlappingPatches(length, n_mels),
                     Lambda(stack_patches),
                 ]
             )
@@ -130,10 +129,13 @@ def pipelines(name, length: float, n_mels: int):
                 [
                     transforms.ToTensor(),
                     transforms.Grayscale(num_output_channels=1),
-                    OverlappingPatches(length,n_mels),
+                    OverlappingPatches(length, n_mels),
                     Lambda(stack_patches),
                 ]
             )
+        if name == "min_overlapping":
+            return Compose([transforms.Grayscale(num_output_channels=1), transforms.ToTensor(),
+                            SplitIntoPatches(length)])
         #
 
     except ValueError:
