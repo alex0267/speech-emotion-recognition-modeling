@@ -6,10 +6,12 @@ import mlflow
 import numpy as np
 import torch
 from torchvision.utils import make_grid
+from sklearn import metrics
 
 from trainer.base_trainer import BaseTrainer
 from utils import MetricTracker, inf_loop
 
+from logger.tensorboard_related import plot_to_image, plot_confusion_matrix
 
 class Trainer(BaseTrainer):
     """
@@ -89,9 +91,9 @@ class Trainer(BaseTrainer):
                         epoch, self._progress(batch_idx), loss.item()
                     )
                 )
-                self.writer.add_image(
-                    "input", make_grid(data.cpu(), nrow=8, normalize=True)
-                )
+                # self.writer.add_image(
+                #     "input", make_grid(data.cpu(), nrow=8, normalize=True)
+                # )
 
             if batch_idx == self.len_epoch:
                 break
@@ -132,9 +134,7 @@ class Trainer(BaseTrainer):
                 output = self.model(data)
                 loss = self.criterion(output, target)
 
-                self.writer.set_step(
-                    (epoch - 1) * len(self.valid_data_loader) + batch_idx, "valid"
-                )
+                self.writer.set_step(epoch , "valid")
                 self.valid_metrics.update("loss", loss.item())
                 if self.config["mlflow"]["experiment_name"]:
                     mlflow.log_metric("loss", loss.item())
@@ -144,9 +144,22 @@ class Trainer(BaseTrainer):
                     if self.config["mlflow"]["experiment_name"]:
                         mlflow.log_metric(met.__name__, met(output, target))
 
+                pred = np.argmax(output,axis=1)
+
+                if batch_idx==0:
+                    confusion_matrix = metrics.confusion_matrix(pred, target, labels=[0,1,2,3,4,5])
+                else:
+                    confusion_matrix += metrics.confusion_matrix(pred, target, labels=[0,1,2,3,4,5])
+
+            figure = plot_confusion_matrix(confusion_matrix, class_names=[0,1,2,3,4,5])
+            cm_image = plot_to_image(figure)
+
             self.writer.add_image(
-                "input", make_grid(data.cpu(), nrow=8, normalize=True)
-            )
+                "confusion_matrix", cm_image)
+
+            # self.writer.add_image(
+            #     "input", make_grid(data.cpu(), nrow=8, normalize=True)
+            # )
 
         # add histogram of model parameters to the tensorboard
         for name, p in self.model.named_parameters():
