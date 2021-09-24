@@ -5,7 +5,7 @@ from torch.utils.data import WeightedRandomSampler
 from torch.utils.data.sampler import SubsetRandomSampler
 from torchvision import datasets, transforms
 
-from base import BaseDataLoader
+from data_loader.base_data_loader import BaseDataLoader
 from data_loader.transforms import pipelines
 
 torchaudio.set_audio_backend("sox_io")
