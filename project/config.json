@@ -10,7 +10,7 @@
         }
     },
     "data_loader": {
-        "type": "CustomDnnDataLoader",
+        "type": "CustomPatchDnnDataLoader",
         "args":{
             "data_dir": "data/test",
             "batch_size": 18,
