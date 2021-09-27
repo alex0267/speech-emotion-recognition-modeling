@@ -1,5 +1,5 @@
 {
-    "name": "PatchDnnModel",
+    "name": "CustomDnnModel_base",
     "n_gpu": 0,
 
     "arch": {
@@ -10,10 +10,10 @@
         }
     },
     "data_loader": {
-        "type": "PatchDnnDataLoader",
+        "type": "CustomDnnDataLoader",
         "args":{
-            "data_dir": "/Users/ncouturier/Dev/speech-emotion-recognition-modeling/project/data/test",
-            "batch_size": 100,
+            "data_dir": "data/test",
+            "batch_size": 18,
             "validation_split": 0.1,
             "num_workers": 0
         }
@@ -39,7 +39,7 @@
     },
     "trainer": {
         "epochs": 10,
-        "save_dir": "/Users/ncouturier/Dev/speech-emotion-recognition-modeling/project/saved/",
+        "save_dir": "saved/",
         "save_period": 1,
         "verbosity": 2,
         "monitor": "min val_loss",
@@ -48,6 +48,6 @@
     },
     "mlflow":{
         "experiment_name": "speech-emotion-recognition-modelling-french",
-        "tracking_uri": "/Users/ncouturier/Dev/speech-emotion-recognition-modeling/project/mlruns"
+        "tracking_uri": "./mlruns"
     }
 }

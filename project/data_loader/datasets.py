@@ -1,10 +1,10 @@
+import random
 import re
 from pathlib import Path
 from typing import Any, Callable, Optional, Tuple
 
-import numpy as np
-import torch
 import torchaudio
+from PIL import Image
 from torchvision.datasets.folder import ImageFolder as SoundFolder
 
 from data_loader.transforms import pipelines
@@ -14,6 +14,10 @@ SND_EXTENSIONS = ".wav"
 
 def is_sound_file(item: str) -> bool:
     return Path(item).suffix in SND_EXTENSIONS and (not item.endswith("gitignore"))
+
+
+def is_pic_file(item: str) -> bool:
+    return Path(item).suffix in ".jpg" and (not item.endswith("gitignore"))
 
 
 class MySoundFolder(SoundFolder):
@@ -87,30 +91,35 @@ class PatchFolder(SoundFolder):
     def __init__(
             self,
             root: str,
-            transform: Optional[Callable] = pipelines("min_overlapping", length=52, n_mels=56),
+            transform: Optional[Callable] = pipelines("min_overlapping", length=102, n_mels=56),
             target_transform: Optional[Callable] = None,
-            loader: Callable[[str], Any] = None,
-            is_valid_file: Optional[Callable[[str], bool]] = None,
+            loader: Callable[[str], Any] = Image.open,
+            is_valid_file: Optional[Callable[[str], bool]] = is_pic_file,
     ) -> None:
         super(SoundFolder, self).__init__(
-            root, transform, target_transform, loader, is_valid_file
+            root=root, transform=transform, target_transform=target_transform, loader=loader,
+            is_valid_file=is_valid_file
         )
         self._post_init()
 
     def _post_init(self):
-        nb_patches_per_im = [len(x[0]) for x in self.samples]
-        patches_labels = sum([[self.samples[i][1]] * nb_patches_per_im[i] for i in range(len(self.samples))], [])
-        patches = torch.cat([torch.stack(x[0]) for x in self.samples], axis=0)
+        _samples = []
 
-        n_samples = len(patches_labels)
-        permutation = np.random.permutation(n_samples)
-        patches_labels = np.array(patches_labels)[permutation]
-        patches = patches[permutation, ...]
+        for item in self.samples:
+            filepath = item[0]
+            label = item[1]
+            img_as_txt = filepath
+            img_as_pil = self.loader(img_as_txt)
+            img_as_tensor = self.transform(img_as_pil)[0]
+            for patch in img_as_tensor:
+                _samples.append({"filepath": filepath, "label": label, "tensor": patch})
+        random.shuffle(_samples)
+        self._samples = _samples
 
-        self.samples = [torch.Tensor(patches), torch.IntTensor(patches_labels)]
-        self.imgs = self.samples
+    def __len__(self) -> int:
+        return len(self._samples)
 
-    def __getitem__(self, index: int) -> Tuple[Any, Any, str, str]:
+    def __getitem__(self, index: int) -> Tuple[Any, Any, str, str, int]:
         """
         Args:
             index (int): Index
@@ -119,9 +128,11 @@ class PatchFolder(SoundFolder):
             tuple: (sample, target, source path, case) where target is class_index of the target class.
         """
 
-        path, target = self.samples[index]
-        sample = self.loader(path)
-        name = Path(path).name
+        rich_sample = self._samples[index]
+        filepath = rich_sample["filepath"]
+        sample = rich_sample["tensor"]
+        label = rich_sample["label"]
+        name = Path(filepath).name
         uuid_re = r".*_([^_]*).jpg"
         case_re = r"(\d)_.*.jpg"
-        return sample, target, re.match(uuid_re, name).groups()[0], re.match(case_re, name).groups()[0]
+        return sample, label#, re.match(uuid_re, name).groups()[0], re.match(case_re, name).groups()[0], index

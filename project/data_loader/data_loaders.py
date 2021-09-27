@@ -1,6 +1,3 @@
-from pathlib import Path
-
-
 import numpy as np
 import torch
 import torchaudio
@@ -58,7 +55,84 @@ def collate_fn(batch):
             label_list.append(_label)
     return torch.stack(data_list).float(), torch.IntTensor(label_list)
 
+from data_loader.datasets import PatchFolder
 
+class PatchDnnDataLoader(BaseDataLoader):
+    """
+    Dnn data loading using BaseDataLoader
+
+    """
+
+    def __init__(
+            self,
+            data_dir,
+            batch_size,
+            validation_split=0.3,
+            num_workers=1,
+    ):
+        self.data_dir = data_dir
+        self.dataset = PatchFolder(self.data_dir)
+        super().__init__(
+            self.dataset,
+            batch_size,
+            validation_split,
+            num_workers
+        )
+
+    def _get_class_weights(self):
+        """
+        compute a dict with weights for each class
+        :return:
+        """
+        unique, counts = np.unique(
+            [class_index for _, class_index in self.dataset], return_counts=True
+        )
+        emotion_count = dict(zip(unique, counts))
+        total_count = sum(counts)
+
+        return {k: total_count / v for k, v in emotion_count.items()}
+
+    def _split_sampler(self, split):
+        """
+        split a sample reweighting classes using WeightedRandomSampler
+        returning a training set and a validation set
+        :param split: either an int giving the number of sample in the validation set or
+        a float, giving the ratio of the validation set
+        :return:
+        """
+        if split == 0.0:
+            return None, None
+
+        idx_full = np.arange(self.n_samples)
+
+        np.random.seed(0)
+        np.random.shuffle(idx_full)
+
+        if isinstance(split, int):
+            assert split > 0
+            assert (
+                    split < self.n_samples
+            ), "validation set size is configured to be larger than entire dataset."
+            len_valid = split
+        else:
+            len_valid = int(self.n_samples * split)
+
+        # WE ALWAYS TAKE THE FIRSTS ELEMENTS FOR VALIDATION?
+        valid_idx = idx_full[0:len_valid]
+        valid_sampler = SubsetRandomSampler(valid_idx)
+
+        train_idx = np.delete(idx_full, np.arange(0, len_valid))
+        #emotion_dict = self._get_class_weights()
+        #emotion_weights = [emotion_dict[np.int(self.dataset[i][1])] for i in train_idx]
+        emotion_weights = [1 for i in train_idx]
+        train_sampler = WeightedRandomSampler(emotion_weights, len(train_idx))
+        #train_sampler = SubsetRandomSampler(len(train_idx))
+
+        # turn off shuffle option which is mutually exclusive with sampler
+        self.shuffle = False
+        self.n_samples = len(train_idx)
+
+        return train_sampler, valid_sampler
 
 
 class CustomDnnDataLoader(BaseDataLoader):
