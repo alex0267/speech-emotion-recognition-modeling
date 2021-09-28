@@ -74,7 +74,7 @@ class Trainer(BaseTrainer):
 
         torch.multiprocessing.set_sharing_strategy("file_system")
 
-        for batch_idx, (data, target) in enumerate(self.data_loader):  # for each batch
+        for batch_idx, (data, target, _) in enumerate(self.data_loader):  # for each batch
             data = copy.deepcopy(data)
             target = copy.deepcopy(target)
             data, target = data.to(self.device), target.to(self.device)
@@ -136,7 +136,7 @@ class Trainer(BaseTrainer):
         self.model.eval()
         self.valid_metrics.reset()
         with torch.no_grad():
-            for batch_idx, (data, target) in enumerate(self.valid_data_loader):
+            for batch_idx, (data, target, _) in enumerate(self.valid_data_loader):
                 data, target = data.to(self.device), target.to(self.device)
 
                 output = self.model(data)

@@ -106,6 +106,8 @@ class PatchDatasetFromImageFolder(TensorDataset):
         nb_patches_per_im = [len(x[0]) for x in dataset]
         patches_labels = sum(
             [[dataset[i][1]] * nb_patches_per_im[i] for i in range(len(dataset))], [])
+        images_idx = sum(
+            [[i] * nb_patches_per_im[i] for i in range(len(dataset))], [])
         patches = torch.cat([torch.stack(x[0]) for x in dataset], axis=0)
 
         n_samples = len(patches_labels)
@@ -114,5 +116,6 @@ class PatchDatasetFromImageFolder(TensorDataset):
         patches = patches[permutation, ...]
 
         self.tensors = [torch.Tensor(patches),
-                                     torch.IntTensor(patches_labels)]
+                                     torch.IntTensor(patches_labels),
+                                    torch.IntTensor(images_idx)]
 

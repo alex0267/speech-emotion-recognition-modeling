@@ -2,6 +2,7 @@ import numpy as np
 import torch
 import torchaudio
 from torch.utils.data import WeightedRandomSampler, Subset
+from torch.utils.data.dataloader import default_collate
 from torch.utils.data.sampler import SubsetRandomSampler
 from torchvision import datasets, transforms
 
@@ -149,6 +150,12 @@ class CustomPatchDnnDataLoader(BaseDataLoader):
         self.data_dir = data_dir
 
         self.dataset = PatchDatasetFromImageFolder(self.data_dir)
+        self.im_idx = [int(tensor[2]) for tensor in self.dataset]
+        self.im_uidx = np.unique(self.im_idx)
+        self.n_im_uidx = len(self.im_uidx)
+
+        np.random.seed(0) # If we leave it here, won't we always have the same split? and therefore no real 10 cross validation?!
+
 
         super().__init__(
             self.dataset,
@@ -157,10 +164,10 @@ class CustomPatchDnnDataLoader(BaseDataLoader):
             num_workers
         )
 
+
     def _split_sampler(self, split):
         """
-        split a sample reweighting classes using WeightedRandomSampler
-        returning a training set and a validation set
+        split a sample returning a training set and a validation set
         :param split: either an int giving the number of sample in the validation set or
         a float, giving the ratio of the validation set
         :return:
@@ -171,16 +178,20 @@ class CustomPatchDnnDataLoader(BaseDataLoader):
         if isinstance(split, int):
             assert split > 0
             assert (
-                    split < self.n_samples
+                    split < self.n_im_uidx
             ), "validation set size is configured to be larger than entire dataset."
             len_valid = split
         else:
-            len_valid = int(self.n_samples * split)
+            len_valid = int(self.n_im_uidx * split)
 
-        np.random.seed(0) # If we leave it here, won't we always have the same split? and therefore no real 10 cross validation?!
-        idx_full = np.random.permutation(self.n_samples)
-        valid_sampler = idx_full[0:len_valid]
-        train_sampler = idx_full[len_valid:]
+        idx_full = np.random.permutation(self.n_im_uidx)
+        valid_uidx = idx_full[0:len_valid]
+        train_uidx = idx_full[len_valid:]
+
+        valid_sampler = [index for index in range(self.n_samples) if self.im_idx[index] in valid_uidx]
+        train_sampler = [index for index in range(self.n_samples) if self.im_idx[index] in train_uidx]
+        np.random.shuffle(valid_sampler)
+        np.random.shuffle(train_sampler)
 
         # turn off shuffle option which is mutually exclusive with sampler
         self.shuffle = False
