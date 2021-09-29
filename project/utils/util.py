@@ -5,6 +5,7 @@ from pathlib import Path
 
 import pandas as pd
 import torch
+import numpy as np
 
 
 def ensure_dir(dirname):
@@ -75,3 +76,14 @@ class MetricTracker:
 
     def result(self):
         return dict(self._data.average)
+
+def set_seed(value=123):
+    """
+    fix seed for reproducibility
+    :param value: default value
+    :return: None
+    """
+    torch.manual_seed(value)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+    np.random.seed(value)
