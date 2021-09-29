@@ -3,43 +3,13 @@ import torch
 import torchaudio
 from torch.utils.data import WeightedRandomSampler
 from torch.utils.data.sampler import SubsetRandomSampler
-from torchvision import datasets, transforms
 
 from base import BaseDataLoader
 from data_loader.transforms import pipelines
 from data_loader.datasets import MySoundFolder
+from utils.util import set_seed
 
 torchaudio.set_audio_backend("sox_io")
-
-
-class MnistDataLoader(BaseDataLoader):
-    """
-    MNIST data loading demo using BaseDataLoader
-    """
-
-    def __init__(
-        self,
-        data_dir,
-        batch_size,
-        validation_split=0.0,
-        num_workers=1,
-        training=True,
-        shuffle=True,
-    ):
-        trsfm = transforms.Compose(
-            [transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))]
-        )
-        self.data_dir = data_dir
-        self.dataset = datasets.MNIST(
-            self.data_dir, train=training, download=True, transform=trsfm
-        )
-        super().__init__(
-            self.dataset, batch_size, validation_split, num_workers, shuffle=shuffle
-        )
-
-
-
-
 
 
 def collate_fn(batch):
@@ -69,9 +39,11 @@ class PatchDnnDataLoader(BaseDataLoader):
             batch_size,
             validation_split=0.3,
             num_workers=1,
+            seed=0
     ):
         self.data_dir = data_dir
         self.dataset = PatchFolder(self.data_dir)
+        set_seed(seed)
         super().__init__(
             self.dataset,
             batch_size,
@@ -105,7 +77,6 @@ class PatchDnnDataLoader(BaseDataLoader):
 
         idx_full = np.arange(self.n_samples)
 
-        np.random.seed(0)
         np.random.shuffle(idx_full)
 
         if isinstance(split, int):
@@ -147,8 +118,10 @@ class CustomDnnDataLoader(BaseDataLoader):
             batch_size,
             validation_split=0.3,
             num_workers=1,
+            seed=0
     ):
         from torchvision.datasets.folder import ImageFolder
+        set_seed(seed)
         self.data_dir = data_dir
         self.dataset = ImageFolder(self.data_dir,
             transform=pipelines("overlapping_from_image", length=52, n_mels=56),
@@ -188,7 +161,6 @@ class CustomDnnDataLoader(BaseDataLoader):
 
         idx_full = np.arange(self.n_samples)
 
-        np.random.seed(0)
         np.random.shuffle(idx_full)
 
         if isinstance(split, int):
@@ -228,7 +200,9 @@ class DnnDataLoader(BaseDataLoader):
         batch_size,
         validation_split=0.3,
         num_workers=1,
+        seed=0
     ):
+        set_seed(seed)
         self.data_dir = data_dir
         self.dataset = MySoundFolder(
             self.data_dir,
@@ -270,7 +244,6 @@ class DnnDataLoader(BaseDataLoader):
 
         idx_full = np.arange(self.n_samples)
 
-        np.random.seed(0)
         np.random.shuffle(idx_full)
 
         if isinstance(split, int):

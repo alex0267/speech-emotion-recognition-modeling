@@ -120,7 +120,7 @@ class PatchFolder(SoundFolder):
     def __len__(self) -> int:
         return len(self._samples)
 
-    def __getitem__(self, index: int) -> Tuple[Any, Any, str, str, int]:
+    def __getitem__(self, index: int) -> Tuple[Any, Any, dict]:
         """
         Args:
             index (int): Index
@@ -133,7 +133,12 @@ class PatchFolder(SoundFolder):
         filepath = rich_sample["filepath"]
         sample = rich_sample["tensor"]
         label = rich_sample["label"]
-        name = Path(filepath).name
+        name = Path(rich_sample["filepath"]).name
+        rich_sample["name"] = name
         uuid_re = r".*_([^_]*).jpg"
         case_re = r"(\d)_.*.jpg"
-        return sample, label#, re.match(uuid_re, name).groups()[0], re.match(case_re, name).groups()[0], index
+        rich_sample["uuid"] = re.match(uuid_re, name).groups()[0]
+        rich_sample["case"] = re.match(case_re, name).groups()[0]
+        rich_sample["index"] = index
+
+        return sample, label, rich_sample

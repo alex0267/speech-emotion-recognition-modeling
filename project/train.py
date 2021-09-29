@@ -21,15 +21,11 @@ import model.model as module_arch
 from parse_config import ConfigParser
 from trainer import Trainer
 from utils import prepare_device
+from utils.util import set_seed
 
 torch.multiprocessing.set_sharing_strategy("file_system")
 
-# fix random seeds for reproducibility
-SEED = 123
-torch.manual_seed(SEED)
-torch.backends.cudnn.deterministic = True
-torch.backends.cudnn.benchmark = False
-np.random.seed(SEED)
+
 
 
 def main(config: ConfigParser):
@@ -38,7 +34,6 @@ def main(config: ConfigParser):
     :param config:
     :return:
     """
-
     # setup data_loader instances
     data_loader = config.init_obj("data_loader", module_data)
     valid_data_loader = data_loader.split_validation()

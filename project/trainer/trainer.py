@@ -17,17 +17,17 @@ class Trainer(BaseTrainer):
     """
 
     def __init__(
-        self,
-        model,
-        criterion,
-        metric_ftns,
-        optimizer,
-        config,
-        device,
-        data_loader,
-        valid_data_loader=None,
-        lr_scheduler=None,
-        len_epoch=None,
+            self,
+            model,
+            criterion,
+            metric_ftns,
+            optimizer,
+            config,
+            device,
+            data_loader,
+            valid_data_loader=None,
+            lr_scheduler=None,
+            len_epoch=None,
     ):
         super().__init__(model, criterion, metric_ftns, optimizer, config)
         self.config = config
@@ -65,7 +65,9 @@ class Trainer(BaseTrainer):
 
         torch.multiprocessing.set_sharing_strategy("file_system")
 
-        for batch_idx, (data, target) in enumerate(self.data_loader):  # for each batch
+        for batch_idx, (data, *targets) in enumerate(self.data_loader):  # for each batch
+            target = targets[0]
+            rich_sample: dict = targets[1]
             data = copy.deepcopy(data)
             target = copy.deepcopy(target)
             data, target = data.to(self.device), target.to(self.device)
@@ -126,7 +128,9 @@ class Trainer(BaseTrainer):
         self.model.eval()
         self.valid_metrics.reset()
         with torch.no_grad():
-            for batch_idx, (data, target) in enumerate(self.valid_data_loader):
+            for batch_idx, (data, *targets) in enumerate(self.valid_data_loader):
+                target = targets[0]
+                rich_sample: dict = targets[1]
                 data, target = data.to(self.device), target.to(self.device)
 
                 output = self.model(data)
