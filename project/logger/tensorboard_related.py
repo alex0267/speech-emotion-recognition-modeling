@@ -24,6 +24,7 @@ def plot_convolution_filters(model, conv_layer_name):
     figure = plt.figure(figsize=(8, 8))
     plt.title(conv_layer_name)
     plt.imshow(im_filters)
+    plt.colorbar()
     return figure
 
 def plot_confusion_matrix(cm, class_names):
@@ -36,9 +37,9 @@ def plot_confusion_matrix(cm, class_names):
     """
     cm_normalized = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
     figure = plt.figure(figsize=(8, 8))
-    plt.imshow(cm_normalized, interpolation='nearest', cmap=plt.cm.Blues)
+    plt.imshow(cm_normalized, interpolation='nearest', cmap=plt.cm.Blues,vmin=0, vmax=1)
     plt.title("Confusion matrix")
-    plt.colorbar()
+    #plt.colorbar()
     tick_marks = np.arange(len(class_names))
     plt.xticks(tick_marks, class_names, rotation=45)
     plt.yticks(tick_marks, class_names)
@@ -47,7 +48,8 @@ def plot_confusion_matrix(cm, class_names):
     labels = np.around(cm_normalized, decimals=2)
 
     # Use white text if squares are dark; otherwise black.
-    threshold = cm.max() / 2.
+    # threshold = cm.max() / 2.
+    threshold = 0.5
     for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
         color = "white" if cm[i, j] > threshold else "black"
         plt.text(j, i, labels[i, j], horizontalalignment="center", color=color)
