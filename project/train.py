@@ -166,5 +166,9 @@ def get_parser():
 if __name__ == "__main__":
 
     config: ConfigParser = ConfigParser.from_args(*get_parser())
+    #import warnings
+    #warnings.filterwarnings("ignore")
+    #with warnings.catch_warnings():
+    #    warnings.simplefilter("ignore")
     main(config)
     stop_gcp_instance()
