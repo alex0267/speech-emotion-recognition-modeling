@@ -111,6 +111,7 @@ class PatchFolder(SoundFolder):
             img_as_txt = filepath
             img_as_pil = self.loader(img_as_txt)
             img_as_tensor = self.transform(img_as_pil)[0]
+            img_as_tensor = img_as_tensor.unsqueeze(0)
             for patch in img_as_tensor:
                 _samples.append({"filepath": filepath, "label": label, "tensor": patch})
         random.shuffle(_samples)
