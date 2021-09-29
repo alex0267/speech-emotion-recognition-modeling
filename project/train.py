@@ -34,6 +34,10 @@ def main(config: ConfigParser):
     :param config:
     :return:
     """
+    import os
+    from pathlib import Path
+    os.chdir(str(Path(__file__).parent))
+
     # setup data_loader instances
     data_loader = config.init_obj("data_loader", module_data)
     valid_data_loader = data_loader.split_validation()

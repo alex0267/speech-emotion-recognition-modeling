@@ -12,10 +12,11 @@
     "data_loader": {
         "type": "PatchDnnDataLoader",
         "args":{
-            "data_dir": "/Users/ncouturier/Dev/speech-emotion-recognition-modeling/project/data/test",
-            "batch_size": 100,
+            "data_dir": "./data/test",
+            "batch_size": 32,
             "validation_split": 0.1,
-            "num_workers": 0
+            "num_workers": 0,
+            "seed" : 42
         }
     },
     "optimizer": {
@@ -38,8 +39,8 @@
         }
     },
     "trainer": {
-        "epochs": 10,
-        "save_dir": "/Users/ncouturier/Dev/speech-emotion-recognition-modeling/project/saved/",
+        "epochs": 100,
+        "save_dir": "./saved/",
         "save_period": 1,
         "verbosity": 2,
         "monitor": "min val_loss",
@@ -48,6 +49,6 @@
     },
     "mlflow":{
         "experiment_name": "speech-emotion-recognition-modelling-french",
-        "tracking_uri": "/Users/ncouturier/Dev/speech-emotion-recognition-modeling/project/mlruns"
+        "tracking_uri": "./mlruns"
     }
 }
