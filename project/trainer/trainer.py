@@ -1,3 +1,4 @@
+import os
 import copy
 from pathlib import Path
 
@@ -5,9 +6,11 @@ import dill
 import mlflow
 import numpy as np
 import torch
-from torchvision.utils import make_grid
+# from torchvision.utils import make_grid
+from sklearn import metrics
 
 from base import BaseTrainer
+from logger.tensorboard_related import plot_to_image, plot_confusion_matrix, plot_convolution_filters
 from utils import MetricTracker, inf_loop
 
 
@@ -28,29 +31,31 @@ class Trainer(BaseTrainer):
             valid_data_loader=None,
             lr_scheduler=None,
             len_epoch=None,
+            initial_weights_path=None,
     ):
         super().__init__(model, criterion, metric_ftns, optimizer, config)
-        self.config = config
-        self.device = device
-        self.data_loader = data_loader
-        if len_epoch is None:
+        self.config = config #parsed config
+        self.device = device #detected device (cpu or gpu)
+        self.data_loader = data_loader #data loader
+        if len_epoch is None: #no epoch given, the batch is the whole set
             # epoch-based training
             self.len_epoch = len(self.data_loader)
-        else:
+        else: # length of batch is the value given
             # iteration-based training
             self.data_loader = inf_loop(data_loader)
             self.len_epoch = len_epoch
-        self.valid_data_loader = valid_data_loader
+        self.valid_data_loader = valid_data_loader #validation data loader
         self.do_validation = self.valid_data_loader is not None
-        self.lr_scheduler = lr_scheduler
-        self.log_step = int(np.sqrt(data_loader.batch_size))
+        self.lr_scheduler = lr_scheduler #learning rate scheduler
+        # TODO: why this value ?
+        self.log_step = int(np.sqrt(data_loader.batch_size))   #step size for printing log info
 
-        self.train_metrics = MetricTracker(
-            "loss", *[m.__name__ for m in self.metric_ftns], writer=self.writer
-        )
-        self.valid_metrics = MetricTracker(
-            "loss", *[m.__name__ for m in self.metric_ftns], writer=self.writer
-        )
+        self.train_metrics = MetricTracker("loss", *[m.__name__ for m in self.metric_ftns], writer=self.writer) #define metric tracker for training
+        if initial_weights_path is not None:  # reuse some pre trained weights
+            pretrained_weights = torch.load(initial_weights_path).get('state_dict')
+            self.model.load_state_dict(pretrained_weights)
+
+        self.valid_metrics = MetricTracker("loss", *[m.__name__ for m in self.metric_ftns], writer=self.writer) #define metric tracker for validation
 
     def _train_epoch(self, epoch):  # noqa:
         """
@@ -78,7 +83,8 @@ class Trainer(BaseTrainer):
             loss.backward()  # Computes the gradient of current tensor w.r.t. graph leaves.
             self.optimizer.step()  # calculus for the currrent step
 
-            self.writer.set_step((epoch - 1) * self.len_epoch + batch_idx)
+            # self.writer.set_step((epoch - 1) * self.len_epoch + batch_idx)
+            self.writer.set_step(epoch)  # set step to epoch
             self.train_metrics.update("loss", loss.item())  # update loss metric
             for met in self.metric_ftns:
                 self.train_metrics.update(met.__name__, met(output, target))
@@ -91,9 +97,9 @@ class Trainer(BaseTrainer):
                         epoch, self._progress(batch_idx), loss.item()
                     )
                 )
-                self.writer.add_image(
-                    "input", make_grid(data.cpu(), nrow=8, normalize=True)
-                )
+                # self.writer.add_image(
+                #    "input", make_grid(data.cpu(), nrow=8, normalize=True)
+                # )
 
             if batch_idx == self.len_epoch:
                 break
@@ -136,9 +142,9 @@ class Trainer(BaseTrainer):
                 output = self.model(data)
                 loss = self.criterion(output, target)
 
-                self.writer.set_step(
-                    (epoch - 1) * len(self.valid_data_loader) + batch_idx, "valid"
-                )
+                # self.writer.set_step(
+                #    (epoch - 1) * len(self.valid_data_loader) + batch_idx, "valid"
+                # )
                 self.valid_metrics.update("loss", loss.item())
                 if self.config["mlflow"]["experiment_name"]:
                     mlflow.log_metric("loss", loss.item())
@@ -148,13 +154,33 @@ class Trainer(BaseTrainer):
                     if self.config["mlflow"]["experiment_name"]:
                         mlflow.log_metric(met.__name__, met(output, target))
 
-            self.writer.add_image(
-                "input", make_grid(data.cpu(), nrow=8, normalize=True)
-            )
+                # self.writer.add_image(
+                #    "input", make_grid(data.cpu(), nrow=8, normalize=True)
+                # )
 
+                if np.mod(epoch, 5) == 0:
+                    pred = np.argmax(output, axis=1)
+                    if batch_idx == 0:
+                        confusion_matrix = metrics.confusion_matrix(pred, target, labels=[0, 1, 2, 3, 4, 5])
+                    else:
+                        confusion_matrix += metrics.confusion_matrix(pred, target, labels=[0, 1, 2, 3, 4, 5])
+
+                self.writer.set_step(epoch, "valid")
+                if np.mod(epoch, 5) == 0:
+                    # Add validation set confusion matrix
+                    figure = plot_confusion_matrix(confusion_matrix, class_names=[0, 1, 2, 3, 4, 5])
+                    cm_image = plot_to_image(figure)
+                    self.writer.add_image("confusion_matrix", cm_image)
+                    # Save filters visualization in tensorboard
+                    for conv_layer_name in ['conv1', 'conv2', 'conv3', 'conv4']:
+                        filter_image = plot_to_image(plot_convolution_filters(self.model, conv_layer_name))
+                        self.writer.add_image(f"layer {conv_layer_name}", filter_image)
+                        # Add histogram of model parameters to the tensorboard
+                    for name, p in self.model.named_parameters():
+                        self.writer.add_histogram(name, p, bins="auto")
         # add histogram of model parameters to the tensorboard
-        for name, p in self.model.named_parameters():
-            self.writer.add_histogram(name, p, bins="auto")
+        # for name, p in self.model.named_parameters():
+        #    self.writer.add_histogram(name, p, bins="auto")
         return self.valid_metrics.result()
 
     def _progress(self, batch_idx):
@@ -184,6 +210,8 @@ class Trainer(BaseTrainer):
             "monitor_best": self.mnt_best,
             "config": self.config,
         }
+        os.makedirs(str(Path(self.checkpoint_dir)), exist_ok=False)
+
         filename = str(self.checkpoint_dir / "checkpoint-epoch{}.pth".format(epoch))
         torch.save(state, filename, pickle_module=dill)
         self.logger.info("Saving checkpoint: {} ...".format(filename))
