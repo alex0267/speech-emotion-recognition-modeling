@@ -4,9 +4,9 @@ import torchaudio
 from torch.utils.data import WeightedRandomSampler
 from torch.utils.data.sampler import SubsetRandomSampler
 
-from base import BaseDataLoader
+from .base.base_data_loader import BaseDataLoader
 from data_loader.transforms import pipelines
-from data_loader.datasets import MySoundFolder
+from dataset.datasets import MySoundFolder
 from utils.util import set_seed
 
 torchaudio.set_audio_backend("sox_io")
@@ -25,7 +25,7 @@ def collate_fn(batch):
             label_list.append(_label)
     return torch.stack(data_list).float(), torch.IntTensor(label_list)
 
-from data_loader.datasets import PatchFolder
+from dataset.datasets import PatchFolder
 
 class PatchDnnDataLoader(BaseDataLoader):
     """
