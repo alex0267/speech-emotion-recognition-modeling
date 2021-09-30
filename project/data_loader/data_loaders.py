@@ -184,6 +184,7 @@ class CustomDnnDataLoader(BaseDataLoader):
         self.shuffle = False
         self.n_samples = len(train_idx)
 
+        assert(len(set(list(train_sampler)).intersection(list(valid_sampler)))==0)
         return train_sampler, valid_sampler
 
 
