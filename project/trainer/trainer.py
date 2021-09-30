@@ -11,7 +11,7 @@ from sklearn import metrics
 from torch.optim.lr_scheduler import StepLR
 from torch.utils.data import DataLoader
 
-from base import BaseTrainer
+from .base.base_trainer import BaseTrainer
 from logger.tensorboard_related import plot_to_image, plot_confusion_matrix, plot_convolution_filters
 from parse_config import ConfigParser
 from utils import MetricTracker, inf_loop
