@@ -1,5 +1,5 @@
-import os
 import copy
+import os
 from pathlib import Path
 
 import dill
@@ -8,9 +8,12 @@ import numpy as np
 import torch
 # from torchvision.utils import make_grid
 from sklearn import metrics
+from torch.optim.lr_scheduler import StepLR
+from torch.utils.data import DataLoader
 
 from base import BaseTrainer
 from logger.tensorboard_related import plot_to_image, plot_confusion_matrix, plot_convolution_filters
+from parse_config import ConfigParser
 from utils import MetricTracker, inf_loop
 
 
@@ -34,28 +37,30 @@ class Trainer(BaseTrainer):
             initial_weights_path=None,
     ):
         super().__init__(model, criterion, metric_ftns, optimizer, config)
-        self.config = config #parsed config
-        self.device = device #detected device (cpu or gpu)
-        self.data_loader = data_loader #data loader
-        if len_epoch is None: #no epoch given, the batch is the whole set
+        self.config: ConfigParser = config  # parsed config
+        self.device: torch.device = device  # detected device (cpu or gpu)
+        self.data_loader: DataLoader = data_loader  # data loader
+        if len_epoch is None:  # no epoch given, the batch is the whole set
             # epoch-based training
-            self.len_epoch = len(self.data_loader)
-        else: # length of batch is the value given
+            self.len_epoch: int = len(self.data_loader)
+        else:  # length of batch is the value given
             # iteration-based training
-            self.data_loader = inf_loop(data_loader)
-            self.len_epoch = len_epoch
-        self.valid_data_loader = valid_data_loader #validation data loader
-        self.do_validation = self.valid_data_loader is not None
-        self.lr_scheduler = lr_scheduler #learning rate scheduler
+            self.data_loader: DataLoader = inf_loop(data_loader)
+            self.len_epoch: int = len_epoch
+        self.valid_data_loader: DataLoader = valid_data_loader  # validation data loader
+        self.do_validation: bool = self.valid_data_loader is not None
+        self.lr_scheduler: StepLR = lr_scheduler  # learning rate scheduler
         # TODO: why this value ?
-        self.log_step = int(np.sqrt(data_loader.batch_size))   #step size for printing log info
+        self.log_step: int = int(np.sqrt(data_loader.batch_size))  # step size for printing log info
 
-        self.train_metrics = MetricTracker("loss", *[m.__name__ for m in self.metric_ftns], writer=self.writer) #define metric tracker for training
+        self.train_metrics = MetricTracker("loss", *[m.__name__ for m in self.metric_ftns],
+                                           writer=self.writer)  # define metric tracker for training
         if initial_weights_path is not None:  # reuse some pre trained weights
             pretrained_weights = torch.load(initial_weights_path).get('state_dict')
             self.model.load_state_dict(pretrained_weights)
 
-        self.valid_metrics = MetricTracker("loss", *[m.__name__ for m in self.metric_ftns], writer=self.writer) #define metric tracker for validation
+        self.valid_metrics: MetricTracker = MetricTracker("loss", *[m.__name__ for m in self.metric_ftns],
+                                                          writer=self.writer)  # define metric tracker for validation
 
     def _train_epoch(self, epoch):  # noqa:
         """
@@ -71,22 +76,22 @@ class Trainer(BaseTrainer):
         torch.multiprocessing.set_sharing_strategy("file_system")
 
         for batch_idx, (data, *targets) in enumerate(self.data_loader):  # for each batch
-            target = targets[0]
+            target: torch.Tensor = targets[0]
             rich_sample: dict = targets[1]
-            data = copy.deepcopy(data)
-            target = copy.deepcopy(target)
+            data: torch.Tensor = copy.deepcopy(data)
+            target: torch.Tensor = copy.deepcopy(target)
             data, target = data.to(self.device), target.to(self.device)
 
             self.optimizer.zero_grad()  # sets the gradients of all optimized torch.Tensor` s to zero.
             output = self.model(data)  # first forward pass
-            loss = self.criterion(output, target)  # loss calculus
+            loss: torch.Tensor = self.criterion(output, target)  # loss calculus
             loss.backward()  # Computes the gradient of current tensor w.r.t. graph leaves.
             self.optimizer.step()  # calculus for the currrent step
 
             # self.writer.set_step((epoch - 1) * self.len_epoch + batch_idx)
             self.writer.set_step(epoch)  # set step to epoch
             self.train_metrics.update("loss", loss.item())  # update loss metric
-            for met in self.metric_ftns:
+            for met in self.metric_ftns:  # loop on metrics for mlflow
                 self.train_metrics.update(met.__name__, met(output, target))
                 if self.config["mlflow"]["experiment_name"]:
                     mlflow.log_metric(met.__name__, met(output, target))
