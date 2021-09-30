@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.nn import LeakyReLU
 
-from base import BaseModel
+from .base.base_model import BaseModel
 
 
 class MnistModel(BaseModel):
