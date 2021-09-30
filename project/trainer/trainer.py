@@ -210,7 +210,7 @@ class Trainer(BaseTrainer):
             "monitor_best": self.mnt_best,
             "config": self.config,
         }
-        os.makedirs(str(Path(self.checkpoint_dir)), exist_ok=False)
+        os.makedirs(str(Path(self.checkpoint_dir)), exist_ok=True)
 
         filename = str(self.checkpoint_dir / "checkpoint-epoch{}.pth".format(epoch))
         torch.save(state, filename, pickle_module=dill)
