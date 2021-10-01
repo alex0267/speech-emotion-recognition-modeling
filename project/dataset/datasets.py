@@ -130,7 +130,6 @@ class PatchFolder(SoundFolder):
         """
 
         rich_sample = self._samples[index]
-        filepath = rich_sample["filepath"]
         sample = rich_sample["tensor"]
         label = rich_sample["label"]
         name = Path(rich_sample["filepath"]).name
