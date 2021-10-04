@@ -1,6 +1,7 @@
 import copy
 import os
 from pathlib import Path
+import warnings
 
 import dill
 import mlflow
@@ -165,24 +166,28 @@ class Trainer(BaseTrainer):
 
                 if np.mod(epoch, 5) == 0:
                     pred = np.argmax(output, axis=1)
-                    if batch_idx == 0:
-                        confusion_matrix = metrics.confusion_matrix(pred, target, labels=[0, 1, 2, 3, 4, 5])
-                    else:
-                        confusion_matrix += metrics.confusion_matrix(pred, target, labels=[0, 1, 2, 3, 4, 5])
+                    with warnings.catch_warnings():
+                        warnings.simplefilter("ignore")
+                        if batch_idx == 0:
+                            confusion_matrix = metrics.confusion_matrix(pred, target, labels=[0, 1, 2, 3, 4, 5])
+                        else:
+                            confusion_matrix += metrics.confusion_matrix(pred, target, labels=[0, 1, 2, 3, 4, 5])
 
                 self.writer.set_step(epoch, "valid")
                 if np.mod(epoch, 5) == 0:
-                    # Add validation set confusion matrix
-                    figure = plot_confusion_matrix(confusion_matrix, class_names=[0, 1, 2, 3, 4, 5])
-                    cm_image = plot_to_image(figure)
-                    self.writer.add_image("confusion_matrix", cm_image)
-                    # Save filters visualization in tensorboard
-                    for conv_layer_name in ['conv1', 'conv2', 'conv3', 'conv4']:
-                        filter_image = plot_to_image(plot_convolution_filters(self.model, conv_layer_name))
-                        self.writer.add_image(f"layer {conv_layer_name}", filter_image)
-                        # Add histogram of model parameters to the tensorboard
-                    for name, p in self.model.named_parameters():
-                        self.writer.add_histogram(name, p, bins="auto")
+                    with warnings.catch_warnings():
+                        warnings.simplefilter("ignore")
+                        # Add validation set confusion matrix
+                        figure = plot_confusion_matrix(confusion_matrix, class_names=[0, 1, 2, 3, 4, 5])
+                        cm_image = plot_to_image(figure)
+                        self.writer.add_image("confusion_matrix", cm_image)
+                        # Save filters visualization in tensorboard
+                        for conv_layer_name in ['conv1', 'conv2', 'conv3', 'conv4']:
+                            filter_image = plot_to_image(plot_convolution_filters(self.model, conv_layer_name))
+                            self.writer.add_image(f"layer {conv_layer_name}", filter_image)
+                            # Add histogram of model parameters to the tensorboard
+                        for name, p in self.model.named_parameters():
+                            self.writer.add_histogram(name, p, bins="auto")
         # add histogram of model parameters to the tensorboard
         # for name, p in self.model.named_parameters():
         #    self.writer.add_histogram(name, p, bins="auto")
