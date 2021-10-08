@@ -45,7 +45,8 @@
         "verbosity": 2,
         "monitor": "min val_loss",
         "early_stop": 10,
-        "tensorboard": true
+        "tensorboard": true,
+        "embedding": true
     },
     "mlflow":{
         "experiment_name": "speech-emotion-recognition-modelling-french",

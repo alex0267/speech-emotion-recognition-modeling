@@ -134,8 +134,7 @@ def pipelines(name, length: float, n_mels: int):
                 ]
             )
         if name == "min_overlapping":
-            return Compose([transforms.Grayscale(num_output_channels=1), transforms.ToTensor(),
-                            SplitIntoPatches(length)])
+            return Compose([transforms.Grayscale(num_output_channels=1), transforms.ToTensor(),SplitIntoPatches(length)])
         #
 
     except ValueError:
