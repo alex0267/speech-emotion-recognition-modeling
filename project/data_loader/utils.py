@@ -93,9 +93,9 @@ def transformations(inpath: str, outpath: str, debug: bool = False, limit=None,m
     out = [ToMelSpectogram(n_mels=n_mels)(item[0]) for item in items] #mel spec
     out = [SplitIntoPatches(length=length)(item) for item in out ] #split into patches
     out = [item for sublist in out for item in sublist] #flatten
-    outnp = torch.stack([item for item in out]).float().numpy() #turn to numpy
-    mn=np.mean(outnp, axis=(0,1,2,3)) #store mean
-    std=np.std(outnp, axis=(0,1,2,3)) #store std
+    out = torch.stack([item for item in out])
+    _max = out.max() #store max
+    _min = out.min() #store min
 
     if limit:
         items = list(items)[0:int(limit) + 1] #given a limit add data
@@ -121,7 +121,7 @@ def transformations(inpath: str, outpath: str, debug: bool = False, limit=None,m
                 waveform = waveform[:,
                            librosa.time_to_samples(start, sr=sample_rate):librosa.time_to_samples(end, sr=sample_rate)]
                 image_tensor = MelSpectrogram(sample_rate=sample_rate, n_mels=52)(waveform) # create and store mfcc
-                normalized_image_tensor = transforms.Normalize((mn,), (std,))(image_tensor)
+                normalized_image_tensor = (image_tensor-_min)/_max #normalize by max
 
                 im = transforms.ToPILImage("L")(normalized_image_tensor) #create a PIL image represented internally as a tensor of 8bits
                 Path(Path(outpath), sentiment).mkdir(parents=True, exist_ok=True)
