@@ -131,6 +131,10 @@ def transformations(inpath: str, outpath: str, debug: bool = False, limit=None,m
                 im = im.resize((width,max([height,min_size])))
                 #width, height = im.size
                 im.save(f"{stem}.jpg", "JPEG")
+
+                with open(Path(outpath,"stats.txt"), "w") as f:
+                    f.write(f"max:{_max},min:{_min}")
+
                 if debug:
                     logging.info(f" saving {stem}.wav ")
                     soundfile.write(f"{stem}.wav", torch.transpose(waveform, 0, 1), sample_rate)
