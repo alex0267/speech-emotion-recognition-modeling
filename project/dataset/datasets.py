@@ -83,7 +83,6 @@ class MySoundFolder(SoundFolder):
             target = self.target_transform(target)
         return sample, target, path, _case  # sample (tensor, sample rate), target, source path, augmentation case
 
-
 class PatchFolder(SoundFolder):
     """
     """
