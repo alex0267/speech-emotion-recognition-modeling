@@ -7,7 +7,7 @@ import torchaudio
 from PIL import Image
 from torchvision.datasets.folder import ImageFolder as SoundFolder
 
-from data_loader.transforms import pipelines
+from preprocessing.transforms import pipelines
 
 SND_EXTENSIONS = ".wav"
 

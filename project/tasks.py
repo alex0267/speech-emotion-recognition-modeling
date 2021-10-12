@@ -252,7 +252,8 @@ def flake8(
         "inpath": "directory containing sounds files",
         "outpath": "directory containing pictures files",
         "debug" : "debug mode",
-        "limit" : "limit in image transformed"
+        "limit" : "limit in image transformed",
+        "mode" : "transformation mode (neural_vad,start_end,any)"
     }
 )
 def sound_to_pics(
@@ -260,7 +261,8 @@ def sound_to_pics(
         inpath=None,
         outpath=None,
         debug=False,
-        limit=None
+        limit=None,
+        mode=None
 ):
     """
     transform sounds files to melspectrogram from a given dir to another dir
@@ -271,9 +273,8 @@ def sound_to_pics(
     # patch for m1 platform
     if torch.backends.quantized.engine is None:
         torch.backends.quantized.engine = 'qnnpack'
-    from data_loader.utils import transformations
-    transformations(inpath=inpath, outpath=outpath,debug=debug,limit=limit)
-
+    from preprocessing.utils import transformations
+    transformations(inpath=inpath, outpath=outpath,debug=debug,limit=limit,mode=mode)
 
 ns = Collection()
 images = Collection('images')

@@ -7,7 +7,7 @@ import torchaudio
 from torch.utils.data import WeightedRandomSampler
 from torch.utils.data.sampler import SubsetRandomSampler
 
-from data_loader.transforms import pipelines
+from preprocessing.transforms import pipelines
 from dataset.datasets import MySoundFolder
 from utils.util import set_seed
 from .base.base_data_loader import BaseDataLoader
