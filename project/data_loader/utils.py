@@ -62,7 +62,7 @@ def file_2_vad_ts(filepath: str, time_space: bool = True) -> Iterable[dict]:
         {"start": mydict["start"] / SAMPLE_RATE, "end": mydict["end"] / SAMPLE_RATE}) or mydict, output))
 
 
-def transformations(inpath: str, outpath: str, debug: bool = False, limit=None,min_size=53):
+def transformations(inpath: str, outpath: str, debug: bool = False, limit=None,min_size=53,n_mels=56,length=102):
     """
 
     :param inpath:
@@ -70,6 +70,8 @@ def transformations(inpath: str, outpath: str, debug: bool = False, limit=None,m
     :param debug:
     :param limit:
     :param min_size: mininimum size in pixel
+    :param n_mels: mel spec param
+    :param length: Split into patches param
     :return:
     """
     from pathlib import Path
@@ -81,14 +83,18 @@ def transformations(inpath: str, outpath: str, debug: bool = False, limit=None,m
     from torchvision import transforms
     from torchaudio.transforms import MelSpectrogram
     from data_loader.data_loaders import MySoundFolder
+    from data_loader.transforms import (SplitIntoPatches, ToMelSpectogram)
     torchaudio.set_audio_backend("sox_io")
     if debug:
         logging.info(f" exporting directory {inpath} ")
 
     items = MySoundFolder(root=inpath, loader=torchaudio.load)
 
+    out = [ToMelSpectogram(n_mels=n_mels)(item[0]).max() for item in items] #mel spec max
+    _max = max(out) #store max
+
     if limit:
-        items = list(items)[0:int(limit) + 1]
+        items = list(items)[0:int(limit) + 1] #given a limit add data
     for item in items: #loop on items
         try:
             sample, target, abs_path, case = item #sample data, target, source filepath, case of data augmentation
@@ -110,16 +116,21 @@ def transformations(inpath: str, outpath: str, debug: bool = False, limit=None,m
 
                 waveform = waveform[:,
                            librosa.time_to_samples(start, sr=sample_rate):librosa.time_to_samples(end, sr=sample_rate)]
-                # create and store mfcc
-                image_tensor = MelSpectrogram(sample_rate=sample_rate, n_mels=52)(waveform)
-                im = transforms.ToPILImage()(image_tensor)
+                image_tensor = MelSpectrogram(sample_rate=sample_rate, n_mels=52)(waveform) # create and store mfcc
+                normalized_image_tensor = image_tensor/_max #normalize by max
+
+                im = transforms.ToPILImage("L")(normalized_image_tensor) #create a PIL image represented internally as a tensor of 8bits
                 Path(Path(outpath), sentiment).mkdir(parents=True, exist_ok=True)
                 stem = str(Path(Path(outpath), sentiment, f"{case}_{file_name}"))
                 width, height = im.size
 
                 im = im.resize((width,max([height,min_size])))
                 #width, height = im.size
-                im.convert('L').save(f"{stem}.jpg", "JPEG")
+                im.save(f"{stem}.jpg", "JPEG")
+
+                with open(Path(outpath,"stats.txt"), "w") as f:
+                    f.write(f"max:{_max}")
+
                 if debug:
                     logging.info(f" saving {stem}.wav ")
                     soundfile.write(f"{stem}.wav", torch.transpose(waveform, 0, 1), sample_rate)
