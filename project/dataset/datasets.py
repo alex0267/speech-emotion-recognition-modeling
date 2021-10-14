@@ -68,12 +68,12 @@ class MySoundFolder(SoundFolder):
         # For soundfile backend, the number of frames.
 
         if _case == 1:
-            effects = [["pitch", "90"]]
+            effects = [['gain', '-n', '10']]
             sample = apply_effects_tensor(
                 sample[0], effects=effects, sample_rate=int(sample_rate)
             )
         if _case == 2:
-            effects = [["pitch", "-90"]]
+            effects = [['gain', '-n', '-10']]
             sample = apply_effects_tensor(
                 sample[0], effects=effects, sample_rate=int(sample_rate)
             )
