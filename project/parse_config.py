@@ -1,14 +1,15 @@
 import logging
 import multiprocessing
 import os
+from argparse import ArgumentParser
 from datetime import datetime
 from functools import partial, reduce
 from operator import getitem
 from pathlib import Path
-from argparse import ArgumentParser
+from typing import Optional, List
+
 from logger import listener_process, logging_buffer
 from utils import read_json, write_json
-from typing import Optional,List
 
 
 class ConfigParser:
@@ -60,7 +61,7 @@ class ConfigParser:
         self.log_levels = {0: logging.WARNING, 1: logging.INFO, 2: logging.DEBUG}
 
     @classmethod
-    def from_args(cls, args : ArgumentParser, options="",default_argv :  Optional[List[str]] = None):
+    def from_args(cls, args: ArgumentParser, options="", default_argv: Optional[List[str]] = None):
         """
         Initialize this class from some cli arguments. Used in train, test.
         :param args:  Argumentparser
@@ -110,8 +111,16 @@ class ConfigParser:
         is equivalent to
         `object = module.name(a, b=1)`
         """
+        import importlib
         module_name = self[name]["type"]
         module_args = dict(self[name]["args"])
+        callable_args = dict(self[name].get("callable_args",{}))
+        for callable_arg in callable_args:
+            args_desc = self[callable_args[callable_arg]]
+            func_module = importlib.import_module("dataset.datasets")
+            func_obj = getattr(func_module,args_desc["type"])
+            module_args[callable_arg] = partial(func_obj, **args_desc["args"])
+
         assert all(
             [k not in module_args for k in kwargs]
         ), "Overwriting kwargs given in config file is not allowed"

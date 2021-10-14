@@ -11,6 +11,11 @@ from preprocessing.transforms import pipelines
 
 SND_EXTENSIONS = ".wav"
 
+import logging
+logger = logging.getLogger(__name__)
+
+
+
 
 def is_sound_file(item: str) -> bool:
     return Path(item).suffix in SND_EXTENSIONS and (not item.endswith("gitignore"))
@@ -91,11 +96,16 @@ class PatchFolder(SoundFolder):
     def __init__(
             self,
             root: str,
-            transform: Optional[Callable] = pipelines("min_overlapping", length=102, n_mels=56),
+            transform: Optional[Callable] = None,
             target_transform: Optional[Callable] = None,
-            loader: Callable[[str], Any] = Image.open,
-            is_valid_file: Optional[Callable[[str], bool]] = is_pic_file,
+            loader: Callable[[str], Any] = None,
+            is_valid_file: Optional[Callable[[str], bool]] = None,
     ) -> None:
+        loader = loader or Image.open
+        is_valid_file = is_valid_file or is_pic_file
+        if not transform:
+            transform = pipelines("min_overlapping", length=102, n_mels=56)
+
         super(SoundFolder, self).__init__(
             root=root, transform=transform, target_transform=target_transform, loader=loader,
             is_valid_file=is_valid_file
@@ -110,10 +120,14 @@ class PatchFolder(SoundFolder):
             label = item[1]
             img_as_txt = filepath
             img_as_pil = self.loader(img_as_txt)
-            img_as_tensor = self.transform(img_as_pil)[0]
-            img_as_tensor = img_as_tensor.unsqueeze(0)
-            for patch in img_as_tensor:
-                _samples.append({"filepath": filepath, "label": label, "tensor": patch})
+            print(filepath)
+            try:
+                img_as_tensor = self.transform()(img_as_pil)
+                for patch in img_as_tensor:
+                    _samples.append({"filepath": filepath, "label": label, "tensor": patch})
+            except Exception as e:
+                logger.info(f"error transforming file {filepath}")
+
         random.shuffle(_samples)
         self._samples = _samples
 

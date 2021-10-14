@@ -11,6 +11,7 @@ if torch.backends.quantized.engine is None:
 from tqdm import tqdm
 
 import data_loader.data_loaders as module_data
+import dataset.datasets as module_dataset
 import model.loss as module_loss
 import model.metric as module_metric
 import model.model as module_arch
@@ -22,13 +23,17 @@ torch.multiprocessing.set_sharing_strategy("file_system")
 def main(config):
     logger = config.get_logger("test")
 
+    # setup dataset instance
+    dataset = config.init_obj("dataset", module_dataset)
+
+    data_loader = config.init_obj("data_loader", module_data,dataset=dataset)
     # setup data_loader instances
     data_loader = getattr(module_data, config["data_loader"]["type"])(
         config["data_loader"]["args"]["data_dir"],
         batch_size=24,
         validation_split=0.0,
         num_workers=config["data_loader"]["args"]["num_workers"],
-    )
+        dataset=dataset)
 
     # build model architecture
     model = config.init_obj("arch", module_arch)

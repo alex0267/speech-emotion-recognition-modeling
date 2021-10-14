@@ -9,6 +9,24 @@
             "num_classes": 6
         }
     },
+    "dataset": {
+        "type": "PatchFolder",
+        "args": {
+            "root" :"./data/test"
+        },
+        "callable_args": {
+            "transform": "dataset_transform"
+        }
+    },
+    "dataset_transform": {
+        "path": "preprocessing.transforms",
+        "type": "pipelines",
+        "args": {
+            "name": "min_overlapping",
+            "length": 102,
+            "n_mels": 56
+        }
+    },
     "data_loader": {
         "type": "PatchDnnDataLoader",
         "args":{

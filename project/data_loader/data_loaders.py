@@ -44,10 +44,13 @@ class PatchDnnDataLoader(BaseDataLoader):
             batch_size,
             validation_split=0.3,
             num_workers=1,
-            seed=0
+            seed=0,
+            dataset=None
     ):
         self.data_dir = data_dir
-        self.dataset = PatchFolder(self.data_dir)
+        if not dataset:
+            dataset = PatchFolder(self.data_dir)
+        self.dataset = dataset
         set_seed(seed)
         super().__init__(
             self.dataset,

@@ -1,12 +1,10 @@
 import argparse
-import os
 import collections
-from typing import NamedTuple
 import logging
-
+import os
+from typing import NamedTuple
 
 import mlflow
-import numpy as np
 import torch
 import torch.multiprocessing
 
@@ -18,14 +16,13 @@ import data_loader.data_loaders as module_data
 import model.loss as module_loss
 import model.metric as module_metric
 import model.model as module_arch
+import dataset.datasets as module_dataset
+
 from parse_config import ConfigParser
 from trainer import Trainer
 from utils import prepare_device
-from utils.util import set_seed
 
 torch.multiprocessing.set_sharing_strategy("file_system")
-
-
 
 
 def main(config: ConfigParser):
@@ -38,12 +35,17 @@ def main(config: ConfigParser):
     from pathlib import Path
     os.chdir(str(Path(__file__).parent))
 
+    # setup dataset instance
+    dataset = config.init_obj("dataset", module_dataset)
+
     # setup data_loader instances
-    data_loader = config.init_obj("data_loader", module_data)
+    data_loader = config.init_obj("data_loader", module_data,dataset=dataset)
+
     valid_data_loader = data_loader.split_validation()
 
     # build model architecture, then print to console
     model = config.init_obj("arch", module_arch)
+
     logger = config.get_logger("train")
     logger.info(model)
 
@@ -130,6 +132,7 @@ def stop_gcp_instance() -> None:
         response = request.execute()
         logging.info(f"stop results {response}")
 
+
 def get_parser():
     parser = argparse.ArgumentParser(description="PyTorch Template")
     parser.add_argument(
@@ -163,12 +166,12 @@ def get_parser():
     ]
     return parser, options
 
-if __name__ == "__main__":
 
+if __name__ == "__main__":
     config: ConfigParser = ConfigParser.from_args(*get_parser())
-    #import warnings
-    #warnings.filterwarnings("ignore")
-    #with warnings.catch_warnings():
+    # import warnings
+    # warnings.filterwarnings("ignore")
+    # with warnings.catch_warnings():
     #    warnings.simplefilter("ignore")
     main(config)
     stop_gcp_instance()

@@ -57,6 +57,7 @@ class SplitIntoPatches(torch.nn.Module):
         :return:
         """
         spectrogram = sample  # channel*#n_mels*dim
+        print(sample.shape)
         patch_list = np.array_split(
             spectrogram[
             :, :, 0: (spectrogram.shape[2] - (spectrogram.shape[2] % self.length))
