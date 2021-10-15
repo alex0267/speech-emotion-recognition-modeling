@@ -18,11 +18,16 @@ logger = logging.getLogger(__name__)
 
 
 def is_sound_file(item: str) -> bool:
-    return Path(item).suffix in SND_EXTENSIONS and (not item.endswith("gitignore"))
+    return Path(item).suffix in SND_EXTENSIONS \
+           and (not item.endswith("gitignore")) \
+           and (not item.endswith(".DS_Store"))
 
 
 def is_pic_file(item: str) -> bool:
-    return Path(item).suffix in ".jpg" and (not item.endswith("gitignore"))
+    return Path(item).suffix in ".jpg" \
+           and (not item.endswith("gitignore")) \
+           and (not item.endswith(".DS_Store"))
+
 
 
 class MySoundFolder(SoundFolder):
@@ -106,8 +111,10 @@ class PatchFolder(SoundFolder):
         if not transform:
             transform = pipelines("min_overlapping", length=102, n_mels=56)
 
+        self.my_transform = transform
+
         super(SoundFolder, self).__init__(
-            root=root, transform=transform, target_transform=target_transform, loader=loader,
+            root=root, transform=None, target_transform=target_transform, loader=loader,
             is_valid_file=is_valid_file
         )
         self._post_init()
@@ -119,16 +126,15 @@ class PatchFolder(SoundFolder):
             filepath = item[0]
             label = item[1]
             img_as_txt = filepath
-            img_as_pil = self.loader(img_as_txt)
-            print(filepath)
-            try:
-                img_as_tensor = self.transform()(img_as_pil)
-                for patch in img_as_tensor:
-                    _samples.append({"filepath": filepath, "label": label, "tensor": patch})
-            except Exception as e:
-                logger.info(f"error transforming file {filepath}")
+            if is_pic_file(img_as_txt):
+                img_as_pil = self.loader(img_as_txt)
+                try:
+                    img_as_tensor = self.my_transform()(img_as_pil)
+                    for patch in img_as_tensor:
+                        _samples.append({"filepath": filepath, "label": label, "tensor": patch})
+                except Exception as e:
+                    logger.info(f"error transforming file {filepath}")
 
-        random.shuffle(_samples)
         self._samples = _samples
 
     def __len__(self) -> int:
