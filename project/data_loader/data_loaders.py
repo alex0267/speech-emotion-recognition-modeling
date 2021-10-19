@@ -51,6 +51,7 @@ class PatchDnnDataLoader(BaseDataLoader):
         if not dataset:
             dataset = PatchFolder(self.data_dir)
         self.dataset = dataset
+        self.seed = seed
         set_seed(seed)
         super().__init__(
             self.dataset,
