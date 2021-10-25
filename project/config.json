@@ -6,7 +6,8 @@
         "type": "DnnModel",
         "args": {
             "seed": 42,
-            "num_classes": 6
+            "num_classes": 6,
+            "nb_classification_neurons": 640
         }
     },
     "dataset": {

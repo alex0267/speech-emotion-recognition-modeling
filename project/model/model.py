@@ -26,7 +26,7 @@ class MnistModel(BaseModel):
 
 
 class DnnModel(BaseModel):
-    def __init__(self, seed, num_classes, dropout=0.25):
+    def __init__(self, seed, num_classes, dropout=0.25, nb_classification_neurons=640):
         super(DnnModel, self).__init__()
         self.seed = torch.manual_seed(seed)
         self.conv1 = nn.Conv2d(
@@ -47,7 +47,7 @@ class DnnModel(BaseModel):
         self.conv4_drop = nn.Dropout2d(p=dropout)
         #self.fc1 = nn.Linear(64 * 4, num_classes)
         #self.fc1 = nn.Linear(320, num_classes)
-        self.fc1 = nn.Linear(640, num_classes)
+        self.fc1 = nn.Linear(nb_classification_neurons, num_classes)
 
 
 
